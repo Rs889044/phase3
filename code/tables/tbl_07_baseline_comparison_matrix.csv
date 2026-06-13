@@ -1,0 +1,9 @@
+,model,type,role in the study
+0,Double-exp fit,empirical curve fit,"physical floor — if a fixed curve matches the NN, the NN adds nothing"
+1,SVR,classic ML (non-recurrent),data-driven floor on flattened windows
+2,GRU,recurrent baseline,lightweight RNN reference
+3,LSTM,recurrent baseline,stronger RNN (more gates/params)
+4,Transformer,attention baseline,"heavy, accurate reference for the gap analysis"
+5,Neural-ODE,genuine PIML,continuous-time latent dynamics; extreme-hardware comparator
+6,Hybrid route A,PINN (closed-form prior),penalize deviation from the fitted curve; no autograd solver
+7,Hybrid route B,PINN (ODE residual),learnable Verhulst residual; the main proposed model

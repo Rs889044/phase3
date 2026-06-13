@@ -1,0 +1,87 @@
+\chapter{Literature Review}
+
+The field of battery prognostics is rapidly evolving, characterized by a transition from empirical correlations to sophisticated AI-driven frameworks. This chapter reviews key contributions to the field, categorizing them into three dominant paradigms: Model-Based, Data-Driven, and Hybrid approaches. The review critically analyzes the strengths and limitations of each paradigm to contextualize the proposed hybrid framework and defend the methodological choices made for this thesis.
+
+\section{Model-Based Approaches: The Foundation of Interpretability}
+
+Model-based approaches are grounded in the explicit mathematical description of battery behavior. They are historically significant as they provide deep insights into the internal states of the cell.
+
+\subsection{Electrochemical Models (White-Box)}
+
+The gold standard for physical fidelity is the electrochemical model, often described by the \textbf{Doyle-Fuller-Newman (DFN)} framework or the \textbf{Single Particle Model (SPM)}. These models utilize coupled Partial Differential Equations (PDEs) to describe lithium-ion concentration gradients, potential distributions, and electrolyte dynamics. Naseri et al. \cite{naseri_efficient} and Wang et al. \cite{wang_pinn} demonstrated that these models can achieve high prognostic accuracy by simulating the growth of the SEI layer. They provide a transparent view of internal degradation, allowing engineers to pinpoint whether capacity fade is due to anode degradation or electrolyte depletion.
+
+\textbf{Limitations:} However, the computational cost of solving these PDEs at every time step is prohibitive for real-time applications. Solving the P2D model typically requires solving a system of differential-algebraic equations with thousands of degrees of freedom. Furthermore, they require the identification of over 20 specific electrochemical parameters (e.g., diffusion coefficients, reaction rate constants, pore tortuosity), many of which can only be determined through destructive testing \cite{unmeasurable_states}. This renders them impractical for general-purpose BMS that must manage cells with manufacturing variances. As highlighted in feedback, pure PINN approaches relying on these PDEs are often too computationally expensive for real-world embedded use \cite{ref1_general}.
+
+\subsection{Empirical Models (Grey-Box)}
+
+To circumvent the complexity of PDEs, researchers have developed empirical models that approximate degradation using simplified differential equations.
+
+\textbf{The Verhulst (Logistic) Model:} Originally developed for population dynamics, the Verhulst model was adapted for battery prognostics by Xian et al. \cite{verhulst_pso}. It posits that battery degradation follows an S-curve, limited by a ``carrying capacity'' (the total active material).
+\begin{equation}
+    \frac{dSOH}{dt} = r \cdot SOH \left(1 - \frac{SOH}{K}\right)
+\end{equation}
+\textbf{Analysis:} This model effectively captures the saturation effect of degradation. Its mathematical simplicity makes it an ideal candidate for the ``physics regularization'' term in this project. However, its rigid S-shape often fails to capture the multi-stage degradation observed in modern chemistries, particularly the transition from linear aging to the accelerated ``knee-point'' \cite{ref1_general}. Despite this, when coupled with a neural network, the Verhulst model can serve as a robust boundary constraint.
+
+\textbf{The Double-Exponential Model:} To address the rigidity of the logistic model, Ma et al. \cite{ma_dual_exp} proposed a Double-Exponential model ($y = a \cdot e^{bx} + c \cdot e^{dx}$).
+\textbf{Mechanism:} This formulation assumes degradation is the sum of two distinct decay processes: a fast initial decay (SEI formation stabilization) and a slow long-term decay (active material loss).
+\textbf{Significance:} This model has become a robust baseline for curve-fitting approaches due to its flexibility in fitting the ``knee-point.'' Establishing this as a baseline in this thesis is crucial to demonstrate whether the hybrid AI model offers superior accuracy over this sophisticated empirical fit \cite{wang_pinn}. It directly answers the feedback regarding the need for a model-driven baseline.
+
+\textbf{Particle Filters (PF):} While not a model per se, Particle Filters are often used in conjunction with empirical equations to estimate state variables under uncertainty \cite{particle_filter_ai}. While effective for tracking non-linear systems, PFs suffer from ``particle degeneracy'' and require significant computational resources to maintain the probability distribution of the state (often needing hundreds of particles), making them heavier than simple ODE integration.
+
+\textbf{Note on Classification:} Each referenced work in the bibliography has been categorized by approach (PDE-PINN, empirical ODE, particle filter, or data-driven) in the Appendix. This explicit mapping clarifies that most recent PINN work in batteries attempts to embed high-fidelity PDEs, whereas the small subset of ODE-regularized hybrids typically uses fixed weighting.
+
+\section{Data-Driven Approaches: The Accuracy Frontier}
+
+The availability of high-quality open-source datasets has fueled the dominance of data-driven methods, which treat the battery as a ``black box'' and learn the mapping from inputs to SOH.
+
+\subsection{Recurrent Neural Networks (RNNs) and Variants}
+
+Standard Feed-Forward Networks (FFNs) are unsuitable for prognostics as they cannot capture temporal dependencies. The field rapidly shifted to Recurrent Neural Networks (RNNs) and their advanced variants.
+
+\textbf{LSTM vs. GRU:} Zhang et al. \cite{zhang_rnn} and others established LSTMs as a strong baseline. However, recent comparative studies by Li et al. \cite{jafari_cnn_gru} indicate that Gated Recurrent Units (GRUs) often match or exceed LSTM performance with lower computational cost (two gates vs. three).
+
+\textbf{Relevance to Thesis:} This efficiency makes the GRU an ideal candidate for the ``lightweight'' framework proposed in this thesis. The GRU's ability to model long-term dependencies with fewer parameters aligns with the goal of edge deployment.
+
+\textbf{CNN-RNN Hybrids:} Jafari et al. \cite{jafari_cnn_gru} demonstrated that 1D-Convolutional Neural Networks (CNNs) are effective at extracting local features from charging curves, which are then passed to GRUs for temporal forecasting. This hierarchical feature-extraction principle informs the physics-informed feature engineering (ICA/DVA) adopted in this work.
+
+\subsection{The Transformer Revolution}
+
+The current state-of-the-art in predictive accuracy involves Transformer models, which utilize self-attention mechanisms to capture global dependencies in time-series data.
+
+\textbf{SGEformer:} Fauzi et al. \cite{fauzi_sge} introduced the SGEformer (Seasonal and Growth Embedding Transformer), which achieves exceptionally low error rates (MSE ~0.0001) on NASA datasets.
+
+\textbf{Limitations:} Despite their accuracy, Transformers have a quadratic memory complexity ($O(L^2)$) with respect to sequence length, making them difficult to deploy on resource-constrained hardware compared to the linear complexity ($O(L)$) of RNNs \cite{machine_learning_web}. Furthermore, purely data-driven models like SGEformer are prone to overfitting to dataset artifacts, such as sensor noise masquerading as capacity regeneration, leading to physically implausible predictions (e.g., predicting infinite battery life in certain local minima).
+
+\textbf{Comparative Note:} For practical on-device feasibility, GRU-based hybrid solutions represent a favourable accuracy–cost frontier; Transformers yield strong accuracy but with an unfavorable compute/memory trade-off for on-device deployment.
+
+\section{Hybrid Physics-Informed Frameworks: The Convergence}
+
+Physics-Informed Machine Learning (PIML) represents the frontier of battery prognostics, aiming to merge the interpretability of physics with the flexibility of deep learning.
+
+\subsection{PDE-Based PINNs (The ``Heavy'' Approach)}
+
+The seminal work in PINNs involves using neural networks to solve the governing PDEs of a system. In the battery domain, Wang et al. \cite{wang_pinn} applied PINNs to the Single Particle Model (SPM).
+
+\textbf{Critique:} While this approach retains rigorous physical fidelity, it does not solve the computational bottleneck. Computing the spatial derivatives (gradients) required for the PDE residuals via automatic differentiation is computationally expensive during the training phase and often during inference if the physics loss is evaluated for online adaptation \cite{pine_survey}. This aligns with the ``Resource Requirement'' feedback, which questioned the feasibility of pure PINNs for real-world use. The computational cost of these PDE-PINNs makes them infeasible for the specific M.Tech project constraints identified in the feedback.
+
+\subsection{ODE-Regularized Networks (The ``Lightweight'' Approach)}
+
+A more pragmatic branch of PIML utilizes simpler Ordinary Differential Equations (ODEs) as regularizers. Wen et al. \cite{verhulst_pso} (and similar works) pioneered a framework fusing a neural network with the Verhulst ODE. They employed an uncertainty-based weighting method to balance the data loss and physics loss, demonstrating improved generalization.
+
+\textbf{Remaining Gaps:} However, significant gaps remain. Most existing hybrid models rely on raw voltage and current inputs rather than advanced physics-informed features (like Incremental Capacity Analysis - ICA). Additionally, they have largely restricted themselves to the Verhulst model, ignoring more flexible priors like the Double-Exponential model which are better suited for ``knee-point'' prediction.
+
+\textbf{Novelty Statement:} While prior studies have embedded ODE priors into neural networks, this research addresses a distinct gap in the literature by integrating four specific components into a unified framework: (a) a Gated Recurrent Unit (GRU) backbone selected for edge-compatibility; (b) the use of Double-Exponential priors alongside Verhulst models to capture accelerated "knee-point" degradation; (c) homoscedastic uncertainty weighting to automate dynamic loss balancing; and (d) physics-informed ICA/DVA feature engineering. This specific architectural combination constitutes the primary novelty of this thesis, offering a practical solution that bridges the gap between computationally expensive physical models and purely data-driven approaches.
+\paragraph{Comparison with Closest Prior Works.}
+Among the reviewed literature, the closest approaches are Wen~et~al.\ who employed a Verhulst-law-based ODE regularization and Xue~et~al.\ who applied PINNs with the full electrochemical SPM model. Wen~et~al.\ did not include uncertainty-weighted loss balancing nor Double-Exponential degradation priors, and their method was not designed for edge deployment. Xue~et~al.\ demonstrated high-fidelity PDE-PINNs, but their computational cost and memory footprint make them unsuitable for on-device BMS inference. In contrast, the present work combines lightweight GRU encoders with simplified ODE-based physics priors, integrates ICA/DVA features, and enforces automatic homoscedastic uncertainty weighting while explicitly constraining model complexity for MCU deployment. This positions the proposed approach as a simplified and computationally practical alternative to existing PINN and hybrid methods.
+
+
+\section{Gap Analysis and Opportunity Statement}
+
+The literature review reveals distinct gaps that this thesis aims to fill:
+
+\begin{itemize}
+    \item \textbf{Computational Feasibility Gap:} Current literature is dominated by PDE-based PINNs which are rigorous but infeasible on standard BMS hardware. There is a distinct lack of research on ``lightweight'' PINNs that utilize simple empirical ODEs for system-level prognostics.
+    \item \textbf{Loss Balancing Gap:} Static weights for physics vs. data loss are brittle and require manual tuning. Dynamic strategies like homoscedastic uncertainty weighting remain under-explored in battery prognostics.
+    \item \textbf{Feature Gap:} Many hybrid works rely on raw voltage/current signals; integrating physics-informed features (like ICA/DVA) into a hybrid pipeline offers untapped robustness.
+    \item \textbf{Benchmark Gap:} Comparisons often omit a rigorous model-driven baseline (Double-Exponential Curve Fitting). This thesis includes this baseline to rigorously isolate the value-add of the AI component.
+\end{itemize}

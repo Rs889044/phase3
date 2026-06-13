@@ -1,0 +1,91 @@
+\chapter{Problem Definition and Formulation}
+
+This chapter provides a rigorous mathematical definition of the SOH estimation problem and formulates the specific physical models that govern the hybrid framework.
+
+\section{Problem Definition}
+
+The objective of the thesis is to estimate the State of Health ($SOH$) of a Lithium-ion battery at a given cycle index $k$, based on a sequence of historical measurements. State of Health (SOH) is defined as the ratio of the maximum releasable capacity at the current cycle ($Q_{max, k}$) to the nominal rated capacity ($Q_{rated}$) provided by the manufacturer:
+
+\begin{equation}
+    SOH_k = \frac{Q_{max, k}}{Q_{rated}} \times 100\%
+\end{equation}
+
+The problem is modeled as a supervised time-series regression task. Let $\mathbf{x}_k \in \mathbb{R}^d$ be a vector of $d$ features extracted at cycle $k$ (e.g., voltage, current, ICA peak position, temperature). The prognostic model $f(\cdot)$ aims to map a sequence of historical features of length $T$ to the current SOH:
+
+\begin{equation}
+    \hat{y}_k = f(\mathbf{X}_{k-T:k}; \theta)
+\end{equation}
+
+Where $\mathbf{X}_{k-T:k}$ represents the input tensor of historical data, $\theta$ represents the trainable parameters of the neural network (GRU), and $\hat{y}_k$ is the predicted SOH.
+
+\textbf{End-of-Life (EOL) Definition:} End-of-Life (EOL) is defined as the first cycle index where $SOH \leq SOH_{EOL}$ \emph{and the condition persists for at least 5 consecutive cycles} (this persistence rule prevents a transient noisy reference cycle or a regeneration dip from triggering a false EOL). The primary threshold is $SOH_{EOL} = 80\%$ for both datasets (matching common automotive practice), with $70\%$ carried as a secondary threshold for the longer-lived CALCE cell. Both datasets are LCO, so the threshold choice reflects the application rather than a chemistry difference. All RUL calculations explicitly document the EOL threshold used.
+
+\section{Physics Formulation (The Regularizer)}
+
+To ensure the neural network adheres to physical laws, we introduce a regularization term based on empirical degradation physics. We employ two candidate Ordinary Differential Equations (ODEs) as the governing physical laws. These ODEs act as ``soft constraints'' on the loss function.
+
+\subsection{The Verhulst (Logistic) Model}
+
+The Verhulst model describes a system whose growth (or decay) is self-limiting. In the context of batteries, it implies that the degradation rate is proportional to the current state and the remaining ``capacity'' for degradation (saturation of SEI layer growth). The governing differential equation is:
+
+\begin{equation}
+    \frac{dSOH}{dt} = r \cdot SOH \cdot \left( 1 - \frac{SOH}{K} \right)
+\end{equation}
+
+Where:
+\begin{itemize}
+    \item $r$: The intrinsic degradation rate constant.
+    \item $K$: The carrying capacity, representing the theoretical lower bound of SOH (typically 0 or a failure threshold).
+\end{itemize}
+
+This model enforces a specific trajectory: an initial slow fade, a linear phase, and a saturation phase. By constraining the network to this derivative, we prevent non-physical predictions such as sudden capacity recovery ($\frac{dSOH}{dt} > 0$), which would violate the monotonic degradation logic inherent to thermodynamic aging \cite{ref1_general}.
+
+\subsection{The Double-Exponential Model}
+
+To capture more complex degradation dynamics, particularly the ``knee-point'' where aging accelerates (often due to lithium plating or massive loss of active material), we formulate a Double-Exponential prior. This model assumes the total degradation is the superposition of two independent exponential decay processes:
+
+\begin{equation}
+    SOH(t) = a \cdot e^{b \cdot t} + c \cdot e^{d \cdot t}
+\end{equation}
+
+\begin{itemize}
+    \item \textbf{Term 1 ($a \cdot e^{b \cdot t}$):} Represents the fast decay process, typically dominated by initial SEI formation and stabilization in the early cycles.
+    \item \textbf{Term 2 ($c \cdot e^{d \cdot t}$):} Represents the slow decay process, dominated by the long-term Loss of Active Material (LAM).
+\end{itemize}
+
+For the PINN framework, we differentiate this equation to obtain the rate of change constraint:
+
+\begin{equation}
+    \frac{dSOH}{dt} = a \cdot b \cdot e^{b \cdot t} + c \cdot d \cdot e^{d \cdot t}
+\end{equation}
+
+This model offers greater flexibility than the Verhulst model, allowing the network to fit datasets with sharp transitions in degradation rates, directly addressing the limitations of simple logistic models \cite{wang_pinn}.
+
+\textbf{Soft Constraints \& Handling Regeneration:} The ODE priors (Verhulst, Double-Exponential) are implemented as soft regularizers rather than hard constraints. The uncertainty-weighted loss allows the training procedure to attenuate the influence of the physics loss when transient phenomena (e.g., capacity regeneration in NASA data) cannot be explained by the ODE prior. This avoids forced suppression of legitimate data observations while still guiding the model toward physically plausible trends.
+
+\section{The Optimization Objective}
+
+The core innovation of this framework lies in the composite loss function. Unlike traditional deep learning, which minimizes only the error between prediction and ground truth, our framework minimizes a joint objective. This composite loss function ensures the model fits the data while respecting the physical laws governing battery aging.
+
+\begin{equation}
+    \mathcal{L}_{total} = \lambda_{data}\mathcal{L}_{data} + \lambda_{phys}\mathcal{L}_{phys}
+\end{equation}
+
+
+\textbf{Data Loss ($\mathcal{L}_{data}$):} We use the Mean Squared Error (MSE) to measure the discrepancy between the network's prediction $\hat{y}$ and the ground truth labels $y$:
+\begin{equation}
+    \mathcal{L}_{data} = \frac{1}{N} \sum_{i=1}^{N} (y_i - \hat{y}_i)^2
+\end{equation}
+
+\textbf{Physics Loss ($\mathcal{L}_{phys}$):} We use Automatic Differentiation (Autograd) to compute the time derivative of the network's output ($\frac{d\hat{y}}{dt}$) with respect to the input time/cycle index. We then compare this computed derivative to the expected derivative derived from the ODE ($g(\hat{y}, \theta_{phys})$):
+\begin{equation}
+    \mathcal{L}_{phys} = \frac{1}{N} \sum_{i=1}^{N} \left| \frac{d\hat{y}}{dt} - g(\hat{y}, \theta_{phys}) \right|^2
+\end{equation}
+
+This formulation ensures that the model fits the training data while ensuring the \textbf{trajectory} of the prediction is consistent with the underlying physics of degradation.
+
+It is crucial to note that the ODE parameters $\theta_{phys}$ (e.g., $a, b, c, d$ in the Double-Exponential model) are not treated as fixed constants. They are implemented as \textbf{learnable parameters} within the computation graph. During the training process, these physical parameters are updated via backpropagation alongside the neural network weights, allowing the physics model to adapt its shape to the specific degradation trajectory of the individual cell being monitored.
+
+\par\medskip
+\noindent \textbf{Note on Implementation Strategy:} 
+Equation (3.6) represents the canonical form of a multi-objective physics-informed loss function, where the balance between data fidelity and physical consistency is controlled by static scalar weights ($\lambda_{data}, \lambda_{phys}$). It is important to note that determining the optimal values for these weights is non-trivial. Therefore, in the specific methodology detailed in \textbf{Chapter 4 (Section 4.3)}, we evolve this general formulation into a \textbf{probabilistic Bayesian framework}. By replacing the static hyperparameters $\lambda$ with learnable uncertainty terms ($\sigma$), the model is designed to automatically adapt the relative importance of the physics and data terms during the training process, thereby resolving the optimization difficulty inherent in the general form.

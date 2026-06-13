@@ -1,0 +1,7 @@
+,model,params,route
+3,neural_ode,1233,none
+0,gru,4065,none
+1,lstm,5409,none
+2,transformer,17409,none
+4,hybrid,41281,A
+5,hybrid_B,41473,B

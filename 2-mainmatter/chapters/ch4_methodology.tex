@@ -1,0 +1,112 @@
+\chapter{Methodology}
+\label{ch:methodology}
+
+This section outlines the system architecture, the deep learning components, and the advanced loss balancing strategy.
+
+\section{System Architecture}
+
+The proposed Hybrid Physics-Informed Deep Learning Framework operates as a sequential pipeline. The architecture is composed of the following distinct modules:
+
+\begin{itemize}
+    \item \textbf{Data Ingestion Module:} Handles the loading of raw time-series data (Voltage, Current, Temperature, Time) from the NASA and CALCE datasets. This module also executes outlier removal and cycle alignment to ensure data consistency.
+
+    \item \textbf{Feature Engineering Module:} Transforms raw data into physics-informed features. This involves computing \textbf{Incremental Capacity (ICA)} and \textbf{Differential Voltage (DVA)} curves to extract peak features that correlate with internal electrochemical states.
+    
+    \par \medskip 
+    \textit{Signal Smoothing Strategy:} Since Incremental Capacity Analysis (ICA) involves differentiating the capacity-voltage curve ($dQ/dV$), raw sensor noise is significantly amplified during the calculation. To mitigate this and ensure stable feature extraction, a \textbf{Savitzky-Golay filtering} stage is applied to the raw voltage data. This pre-processing step smooths the voltage curve while preserving the peak features essential for identifying Loss of Active Material (LAM) prior to numerical differentiation.
+
+    \item \textbf{Hybrid Modeling Module (Core):}
+    \begin{itemize}
+        \item \textbf{The GRU Network:} A stacked Gated Recurrent Unit network processes the temporal sequence of extracted features.
+        \item \textbf{The Physics Regularizer:} A logical block that computes the physics residual based on the ODEs (Verhulst and Double-Exponential) defined in Chapter 3.
+        \item \textbf{The Uncertainty Weighting Layer:} A mechanism to dynamically adjust the loss weights during training, balancing the data-driven error and the physics-informed residual.
+    \end{itemize}
+
+    \item \textbf{Evaluation Module:} Benchmarks the trained model against the baselines using metrics like Root Mean Square Error (RMSE), Mean Absolute Error (MAE), and a custom ``Physical Consistency Score'' to quantify the reduction in non-physical predictions.
+\end{itemize}
+\vspace{1cm}
+\begin{figure}[h!]
+    \centering
+    % width=1.0\textwidth uses the full available width for this detailed diagram
+    \includegraphics[width=1.0\textwidth]{2-mainmatter/chapters/fig_architecture.png}
+    \caption{Schematic of the proposed Hybrid Physics-Informed Framework. The architecture integrates Savitzky-Golay smoothing for feature stability and utilizes a parallel physics regularizer (ODE) to constrain the GRU network via an uncertainty-weighted composite loss function.}
+    \label{fig:system_arch}
+\end{figure}
+\section{Deep Learning Component: Gated Recurrent Unit (GRU)}
+
+The choice of the Gated Recurrent Unit (GRU) is driven by the project's requirement for computational feasibility on standard resources. While LSTMs are powerful, they possess three gates (input, forget, output), leading to a higher parameter count. GRUs simplify this to two gates (update and reset) without sacrificing the ability to capture long-term dependencies. The mathematical formulation of the GRU cell used in this framework is:
+
+\begin{itemize}
+    \item \textbf{Update Gate ($z_t$):} Determines how much of the previous memory to retain.
+    \begin{equation}
+        z_t = \sigma(W_z \cdot [h_{t-1}, x_t])
+    \end{equation}
+    \item \textbf{Reset Gate ($r_t$):} Determines how much of the past information to neglect.
+    \begin{equation}
+        r_t = \sigma(W_r \cdot [h_{t-1}, x_t])
+    \end{equation} 
+\begin{figure}[h!]
+    \centering
+    % width=0.85\textwidth is slightly smaller since the GRU image is compact
+    \includegraphics[width=0.85\textwidth]{2-mainmatter/chapters/fig_gru.png}
+    \caption{Internal structure of the Gated Recurrent Unit (GRU). Unlike LSTMs which utilize three gates, the GRU employs only two (Update and Reset), reducing parameter count and memory footprint, making it highly suitable for edge-compatible BMS implementations.}
+    \label{fig:gru_structure}
+\end{figure}
+    \item \textbf{Candidate Hidden State ($\tilde{h}_t$):} Computes the new candidate memory content.
+    \begin{equation}
+        \tilde{h}_t = \tanh(W \cdot [r_t * h_{t-1}, x_t])
+    \end{equation}
+    \item \textbf{Final Hidden State ($h_t$):} Combines the old and new memory based on the update gate.
+    \begin{equation}
+        h_t = (1 - z_t) * h_{t-1} + z_t * \tilde{h}_t
+    \end{equation}
+\end{itemize}
+
+This efficient architecture ($O(L)$ complexity) makes it superior to Transformers ($O(L^2)$ complexity) for resource-constrained BMS implementations \cite{ref1_general}.
+
+\textbf{Implementation Notes:} The GRU hidden size (32--64) and sequence length (8--15 cycles) were selected by Optuna Bayesian (TPE) hyperparameter optimisation. Parameter counts range from $\approx$4k (vanilla GRU) to $\approx$41k (the hidden-64 benchmark hybrid), with the deployed matched-size hybrid at $\approx$11k --- all well under a 1~MB footprint (see Chapter~\ref{ch:results}, Section~\ref{sec:footprint}).
+
+\section{Adaptive Loss Balancing (Uncertainty Weighting)}
+
+A major challenge in training hybrid models is determining the optimal values for the hyperparameters $\lambda_{data}$ and $\lambda_{phys}$. If $\lambda_{phys}$ is set too high, the model becomes overly rigid and ignores the nuances of the data. If set too low, the physical constraint is ineffective. Manual tuning of these weights is time-consuming and often suboptimal.
+
+To solve this, we adopt the \textbf{Homoscedastic Uncertainty Weighting} approach proposed by Kendall et al. and applied to batteries by Wen et al. \cite{verhulst_pso}. This method interprets the multi-objective loss minimization as maximizing the Gaussian log-likelihood of the model. The composite loss function is reformulated as:
+
+\begin{equation}
+    \mathcal{L}(\theta, \sigma_{data}, \sigma_{phys}) = \frac{1}{2\sigma_{data}^2} \mathcal{L}_{data} + \frac{1}{2\sigma_{phys}^2} \mathcal{L}_{phys} + \log \sigma_{data} + \log \sigma_{phys}
+\end{equation}
+
+Here, $\sigma_{data}$ and $\sigma_{phys}$ are learnable parameters representing the model's observation noise (uncertainty) for the data task and the physics task, respectively. During backpropagation, the network effectively ``learns'' the weights. For example, if the physical model (ODE) fails to explain a transient behavior in the data, the model can increase $\sigma_{phys}$, thereby reducing the penalty from the physics loss ($\frac{1}{2\sigma_{phys}^2}$) for that instance. This allows the model to be ``physics-guided'' rather than ``physics-constrained,'' offering a flexible balance that improves convergence and stability.
+
+\textbf{Practical Safeguards:} To avoid degeneracy, we (a) initialize $\sigma_{phys}$ and $\sigma_{data}$ to reasonable values (0.1--1.0) and (b) apply a small regularizer if necessary to ensure the physics prior remains an active guide.
+
+\section{Two Physics Routes and What Is Compared}
+\label{sec:two_routes}
+
+The physics regularizer of Chapter~\ref{ch:methodology} admits two distinct
+implementations, and rather than assume one is best, the framework implements
+\emph{both} and lets the experiments decide (Chapter~\ref{ch:results}):
+
+\begin{itemize}
+    \item \textbf{Route~A --- fixed closed-form prior.} The Verhulst law has a
+    closed-form (logistic) solution and the double-exponential is already explicit,
+    so the prior can be \emph{fit once} to the training cells and used as a soft
+    penalty that pulls the network's trajectory toward that fixed curve. This is
+    cheap (no autograd through an ODE) but assumes the held-out cell resembles the
+    training cells.
+    \item \textbf{Route~B --- learnable ODE-residual.} Here the ODE parameters
+    (e.g.\ the Verhulst $r$ and $K$) are \emph{learnable} and are trained jointly
+    with the network; the physics loss penalises the residual between the network's
+    autograd time-derivative and the ODE. This costs roughly $3\times$ the training
+    time but lets the physical law adapt to the data rather than importing a fixed,
+    possibly mismatched shape.
+\end{itemize}
+
+Similarly, the loss balance is evaluated under both a \textbf{fixed weight} and the
+\textbf{homoscedastic uncertainty weighting} of Section~4.3. The hyperparameters
+(hidden size, sequence length, learning rate, physics weight) are selected by
+\textbf{Optuna} Bayesian (TPE) optimisation, which is distinct from the Bayesian
+\emph{interpretation} of the uncertainty-weighted loss. Chapter~\ref{ch:results}
+reports the outcome of these comparisons; in summary, the \emph{learnable} route~B
+with a well-chosen fixed weight proved the most robust, while the fixed closed-form
+prior (route~A) and uncertainty weighting were less reliable in this setting.

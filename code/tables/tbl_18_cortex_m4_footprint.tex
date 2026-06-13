@@ -1,0 +1,13 @@
+\begin{table}
+\caption{cortex m4 footprint}
+\label{tab:cortex_m4_footprint}
+\begin{tabular}{llrrrrrrrrr}
+\toprule
+ & model & params & fp32\_kb & int8\_kb & macs & act\_ram\_kb & est\_m4\_latency\_ms & fits\_flash & fits\_ram & soh\_rmse(B0018) \\
+\midrule
+0 & hybrid\_B\_small & 11009 & 46.8000 & 11.7000 & 101328 & 1.2500 & 1.2670 & True & True & 0.0202 \\
+1 & gru\_small & 4065 & 18.1000 & 4.5000 & 38432 & 1.2500 & 0.4800 & True & True & 0.0199 \\
+2 & transformer & 17409 & 89.7000 & 22.4000 & 84512 & 2.5000 & 1.0560 & True & True & 0.0205 \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,36 @@
+# ---- datasets (large, external, re-downloadable) ----
+data/
+
+# ---- notebook backup / scratch ----
+*.ipynb.bak
+*.bak
+
+# ---- macOS ----
+.DS_Store
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ---- Jupyter ----
+.ipynb_checkpoints/
+.virtual_documents/
+
+# ---- LaTeX build artifacts (2-mainmatter) ----
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+*.bcf
+*.run.xml

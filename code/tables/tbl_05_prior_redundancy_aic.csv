@@ -1,0 +1,6 @@
+,cell,logistic R²,double-exp R²,logistic RMSE,double-exp RMSE,logistic AIC,double-exp AIC,winner (AIC)
+0,B0005,0.9725,0.9862,0.0157,0.0112,-1389.1,-1502.5,double-exp
+1,B0006,0.9515,0.9811,0.0277,0.0173,-1199.5,-1356.1,double-exp
+2,B0007,0.9685,0.9838,0.0142,0.0102,-1422.7,-1532.3,double-exp
+3,B0018,0.9266,0.9624,0.0209,0.015,-1015.2,-1101.3,double-exp
+4,CS2_35,0.9625,0.9748,0.0328,0.0269,-5996.3,-6343.0,double-exp

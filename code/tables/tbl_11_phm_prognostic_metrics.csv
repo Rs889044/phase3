@@ -1,0 +1,9 @@
+,α-λ accuracy,Prognostic horizon,CRA,Phys. consistency
+Double-exp fit,0.716,83.25,0.365,0.995
+SVR,0.717,82.75,0.475,0.732
+Transformer,0.617,73.917,-0.095,0.795
+LSTM,0.635,79.333,0.179,0.814
+GRU,0.706,80.083,0.202,0.776
+Neural-ODE,0.587,73.417,-0.229,0.675
+Hybrid (route B),0.699,80.083,0.303,0.939
+Hybrid (route A),0.588,73.583,-0.199,0.894

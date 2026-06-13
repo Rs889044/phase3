@@ -1,0 +1,11 @@
+,feature,group,description
+0,ica_peak_voltage_V,ICA,Voltage of the dominant dQ/dV peak on the CC-charge curve
+1,ica_peak_magnitude,ICA,Height of that dQ/dV peak (phase-transition strength)
+2,ica_peak_prominence,ICA,Topographic prominence of the peak (robust height)
+3,ica_area,ICA,∫ dQ/dV dV over the window (≈ charge throughput)
+4,discharge_time_s,discharge,Duration of the discharge segment
+5,v_min,discharge,Minimum voltage during discharge
+6,v_mean,discharge,Mean discharge voltage
+7,v_var,discharge,Intra-cycle voltage variance
+8,temp_rise_C,discharge,Max−min temperature during discharge (NASA only)
+9,ir_proxy_ohm,resistance,Internal resistance (CALCE column / NASA |ΔV/ΔI| proxy)

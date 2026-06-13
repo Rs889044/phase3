@@ -1,0 +1,94 @@
+\chapter{Conclusion and Future Work}
+\label{ch:conclusion}
+
+\section{Conclusion}
+
+This thesis addressed the industrial need for battery prognostic tools that are
+accurate, interpretable, and computationally feasible for deployment on edge
+devices within Battery Management Systems (BMS). The literature review established
+that existing approaches force a compromise between the accuracy of ``black-box''
+deep learning and the interpretability of ``white-box'' physical models, and that
+most physics-informed work in the battery domain relies on computationally
+expensive PDE-PINNs.
+
+To bridge this gap, the work proposed a \textbf{lightweight hybrid framework} that
+regularises a data-driven Gated Recurrent Unit (GRU) with tractable empirical
+degradation physics. Two physics mechanisms were implemented and \emph{compared}: a
+fixed closed-form prior used as a soft penalty (\textbf{route~A}, using Verhulst
+and double-exponential laws) and a \emph{learnable} ODE-residual whose parameters
+are trained jointly with the network (\textbf{route~B}). The framework was
+evaluated honestly on the full NASA leave-one-cell-out protocol (four folds,
+three seeds), a zero-shot cross-dataset transfer to CALCE, a complete physics-design
+ablation, and a measured Cortex-M4 deployment footprint.
+
+The measured results support a sharper and more defensible conclusion than the
+interim ``the hybrid always wins'' narrative:
+
+\begin{itemize}
+    \item \textbf{Physics helps --- but the mechanism matters.} The
+    \emph{learnable} ODE-residual (route~B) is the robust winner: it is consistent
+    across every unseen cell (SOH RMSE $0.028$--$0.031$) and achieves the best
+    physical consistency of any model ($0.918$), significantly higher than the
+    Transformer on all 12 folds ($p\approx5\times10^{-4}$). Its mean SOH RMSE is
+    also $-38.6\%$ below the Transformer in-distribution, although with only four
+    cells that accuracy gap is not statistically significant ($p=0.077$). By
+    contrast, the \emph{fixed} closed-form prior
+    (route~A) helps typical cells but actively \emph{hurts} atypical ones --- it is
+    the weakest hybrid overall because a prior fit on other cells cannot describe a
+    cell such as B0006, which begins above rated capacity with heavy regeneration.
+    \item \textbf{Honest baselines.} The LSTM is the most accurate single baseline
+    on unseen NASA cells (RMSE $0.0262$, statistically tied with route~B), and the
+    Transformer generalises best across datasets. The route-B hybrid is the best
+    \emph{all-round} compromise of accuracy, physical plausibility, cross-dataset
+    robustness, and footprint --- precisely the balance a safety-critical BMS needs.
+    \item \textbf{Interpretability with real parameters.} The physics priors were
+    fit to real per-cell data (the double-exponential beats the logistic by AIC on
+    every cell), and route~B learns its own Verhulst parameters
+    ($r\approx-0.81$, $K\approx0.93$) during training, giving the model a
+    transparent, physically meaningful degradation law rather than fabricated
+    coefficients.
+    \item \textbf{Lightweight by measurement, not assertion.} A matched-size
+    route-B hybrid (hidden $=32$, $\approx$11k parameters) quantises to
+    \textbf{11.7~KB} of int8 flash with \textbf{1.25~KB} of activation RAM ---
+    about half the Transformer's footprint --- while remaining more physically
+    consistent and retaining leave-one-cell-out accuracy. All profiled models fit
+    the Cortex-M4 budget ($<$256~KB RAM, $<$1~MB flash) with wide margins.
+    \item \textbf{Reported transparently.} The homoscedastic uncertainty weighting
+    did not have the impact we anticipated on this small, clean problem --- a
+    well-chosen fixed weight performed as well or slightly better --- so the fixed
+    weight is adopted for the headline models. This is stated openly rather than
+    hidden; it gently refines the recommended recipe (dynamic loss balancing is a
+    sound mechanism but not free here) and the automatic weighting is expected to
+    earn its place on larger, noisier datasets.
+\end{itemize}
+
+In sum, the thesis demonstrates that a \emph{lightweight, learnable
+physics-regularised recurrent model} is a viable, trustworthy, and deployable
+pathway for the next generation of EV battery prognostics --- accurate where it
+matters, physically plausible by construction, robust to unseen cells, and small
+enough for on-board inference.
+
+\section{Future Work}
+
+The framework is complete and reproducible end-to-end (\texttt{make all}). Several
+avenues would extend its value:
+
+\begin{itemize}
+    \item \textbf{Dynamic relaxation of the physics penalty.} The fixed-prior
+    route~A degraded atypical cells. A schedule that relaxes the ODE-penalty weight
+    in early epochs (letting the network establish empirical convergence before the
+    physical constraint tightens) could recover route~A's accuracy on typical cells
+    without its failure mode on atypical ones.
+    \item \textbf{On-board latency validation.} The Cortex-M4 latency reported here
+    is an analytic MACs/clock estimate. Flashing the ONNX/int8 model to a physical
+    M4 board and measuring wall-clock inference and energy per window would close
+    the deployment loop.
+    \item \textbf{Broader chemistries and operating conditions.} Both datasets are
+    LCO; validating on LFP/NMC cells and on field-collected partial-cycle data would
+    test the framework beyond the cross-load/cross-form-factor transfer studied
+    here.
+    \item \textbf{Per-cell online adaptation.} Because route~B learns its ODE
+    parameters, a lightweight online update of those parameters during deployment
+    could let a single shipped model specialise to the cell it is actually
+    monitoring.
+\end{itemize}

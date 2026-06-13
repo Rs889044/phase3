@@ -1,0 +1,5 @@
+,model,val_RMSE,params,seq,hidden
+0,hybrid route-A double-exp,0.0092,~11k,10,32
+1,GRU,0.0112,~4k,15,32
+2,Transformer,0.0114,~17k,8,32
+3,hybrid route-B ODE,0.0129,~11k,10,32

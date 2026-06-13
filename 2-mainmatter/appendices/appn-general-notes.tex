@@ -1,0 +1,41 @@
+\chapter{Classification of Reviewed Literature}
+\label{app:lit-classification}
+
+As referenced in Chapter 2, this appendix provides a categorical mapping of the key literature reviewed for this thesis. The works are classified based on their primary methodological approach: Model-Based (Electrochemical or Empirical), Data-Driven (RNN, CNN, Transformer), or Hybrid (Physics-Informed).
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.3}
+% X column ensures the long category names wrap instead of going off-page
+\begin{tabularx}{\textwidth}{@{} l l X @{}}
+\toprule
+\textbf{Reference} & \textbf{Primary Author} & \textbf{Methodological Category} \\
+\midrule
+
+% Model-Based Examples
+\cite{naseri_efficient} & Naseri et al. & Model-Based (Electrochemical/DFN) \\
+\cite{ma_dual_exp} & Ma et al. & Model-Based (Empirical/Double-Exponential) \\
+\cite{verhulst_pso} & Wen/Xian et al. & Model-Based (Empirical/Verhulst) \\
+
+% Data-Driven Examples
+\cite{zhang_rnn} & Zhang et al. & Data-Driven (RNN/LSTM) \\
+\cite{jafari_cnn_gru} & Jafari et al. & Data-Driven (CNN-GRU Hybrid) \\
+\cite{fauzi_sge} & Fauzi et al. & Data-Driven (Transformer/SGEformer) \\
+
+% Hybrid/PINN Examples
+\cite{wang_pinn} & Wang et al. & Hybrid (PDE-based PINN) \\
+\cite{pde_pinn} & Authors (RG) & Hybrid (PDE-based PINN) \\
+\cite{ref1_general} & Review & Comprehensive Review (All Categories) \\
+
+\bottomrule
+\end{tabularx}
+\caption{Methodological Classification of Cited Works}
+\label{tab:lit_class}
+\end{table}
+
+\section*{Summary of Classification}
+\begin{itemize}
+    \item \textbf{Model-Based:} Focuses on interpretability but lacks flexibility for unseen aging patterns.
+    \item \textbf{Data-Driven:} Focuses on high accuracy using large datasets but lacks physical consistency.
+    \item \textbf{Hybrid:} The target domain of this thesis, aiming to bridge the gap between the two above.
+\end{itemize}

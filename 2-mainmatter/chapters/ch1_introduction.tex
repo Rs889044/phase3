@@ -1,0 +1,97 @@
+\chapter{Introduction}
+
+\section{The Global Context of Battery Prognostics}
+
+The transition from internal combustion engines (ICE) to electric propulsion represents one of the most significant industrial shifts of the 21st century. As nations strive to meet the ambitious climate goals outlined in the Paris Agreement and subsequent COP summits, the demand for high-performance, reliable energy storage systems has surged exponentially.
+
+Lithium-ion (Li-ion) batteries have emerged as the dominant technology for this transition due to their high energy density, low self-discharge rates, and lack of memory effect compared to predecessors like Nickel-Metal Hydride (NiMH) or Lead-Acid batteries \cite{ref1_general}.
+
+However, these electrochemical systems are complex, time-variant, and non-linear. They degrade inevitably with usage and time, a process influenced by a multitude of stress factors including ambient temperature, charge/discharge rates (C-rates), Depth of Discharge (DOD), and mechanical vibrations \cite{nasa_datasets}. This degradation is not merely a performance issue regarding vehicle range but a critical safety and economic concern.
+
+The State of Health (SOH), typically defined as the ratio of the battery's current maximum capacity to its rated capacity, is the primary metric for determining the viability of a battery pack. When SOH drops below a certain threshold—typically 70--80\% for automotive applications—the battery is considered ``retired'' from vehicular service due to the increased risk of failure and reduced range capability \cite{ma_dual_exp}. The Remaining Useful Life (RUL) predicts the number of cycles or time remaining until this threshold is reached.
+
+Inaccurate estimation of these parameters leads to two distinct failure modes in battery management, each with severe consequences:
+
+\begin{itemize}
+    \item \textbf{Over-estimation of RUL:} This poses severe safety risks. If a BMS believes a battery is healthier than it is, it may allow aggressive charging or discharging protocols that the degraded cell cannot handle, leading to lithium plating, internal short circuits, or in extreme cases, thermal runaway and fire \cite{ref1_general}. Additionally, it contributes to unexpected vehicle stranding (``range anxiety''), which erodes consumer confidence in EV technology.
+    
+    \item \textbf{Under-estimation of RUL:} This results in the premature disposal or recycling of viable assets. If a battery is retired at 85\% health because the BMS incorrectly estimates it at 75\%, the total cost of ownership for the vehicle increases significantly. Furthermore, this premature retirement contributes to unnecessary environmental waste and supply chain strain for critical minerals like lithium, cobalt, and nickel \cite{ref1_general}.
+\end{itemize}
+
+\textbf{Use-Case Clarification:} To make the engineering objective explicit: the proposed framework targets onboard Battery Management System (BMS) usage for passenger EVs and light commercial vehicles, as well as for fleet managers requiring robust SOH/RUL estimates for operational decisions (charging strategy, warranty, second-life planning). The model is designed to be trained offline (server/GPU) and deployed as a compact inference model on edge hardware. This separation—offline training, online lightweight inference—is core to the design decisions made in this thesis, specifically the choice of a GRU backbone and ODE regularizers. The practical benefits are safer charging protocols, improved range estimation, and reduced premature retirement of battery packs.
+
+Therefore, the development of robust, accurate, and computationally feasible prognostic algorithms is not just an academic exercise but a prerequisite for the sustainable scalability of the electric mobility sector.
+
+\section{The Degradation Mechanism and Modeling Challenges}
+
+To understand the difficulty of the prognostic challenge, one must appreciate the underlying electrochemistry that the algorithms attempt to model. Battery aging is governed by two primary, coupled mechanisms: the \textit{Loss of Lithium Inventory (LLI)} and the \textit{Loss of Active Material (LAM)} \cite{ref1_general}.
+
+\textbf{Loss of Lithium Inventory (LLI)} is primarily caused by the formation and continuous thickening of the Solid Electrolyte Interphase (SEI) layer on the anode during charging. The SEI layer is a passivation film that forms from the decomposition of the electrolyte. While essential for stability, its continuous growth consumes cyclable lithium ions, permanently removing them from the energy storage process. This mechanism is often dominant in the early stages of battery life and typically follows a linear or square-root-of-time trajectory \cite{wang_pinn}.
+
+\textbf{Loss of Active Material (LAM)} involves the structural degradation of the electrode materials. This includes phenomena such as particle cracking, binder decomposition, and electrical isolation of active material sites. LAM is often exacerbated by the mechanical stress of repeated intercalation and de-intercalation of ions, which causes volume expansion and contraction of the electrode lattice. LAM is frequently responsible for the accelerated aging phase or ``knee-point'' observed in the later stages of a battery's life, where capacity drops precipitously after a period of linear decay \cite{ref1_general}.
+
+\begin{figure}[h!]
+    \centering
+    % width=0.95\textwidth ensures it fits within margins with a tiny buffer
+    \includegraphics[width=0.95\textwidth]{2-mainmatter/chapters/fig_degradation.png}
+    \caption{Typical Li-ion battery degradation trajectory illustrating the two dominant aging mechanisms: Linear decay driven by SEI growth (LLI) and accelerated aging (knee-point) driven by Loss of Active Material (LAM).}
+    \label{fig:degradation_curve}
+\end{figure}
+
+Capturing this non-linearity—specifically the transition from linear degradation to the accelerated knee-point—is the central challenge of modern Battery Management Systems (BMS). Traditional industrial BMS rely on Equivalent Circuit Models (ECMs) or simple Coulomb counting. These methods treat the battery as a linear capacitor-resistor network. While computationally inexpensive, they fail to capture the complex physicochemical changes occurring during aging, leading to significant accumulation of error over time \cite{naseri_efficient}. They are essentially ``blind'' to the internal state of health until a calibration event occurs.
+
+Conversely, high-fidelity electrochemical models, such as the Doyle-Fuller-Newman (DFN) model or the Pseudo-Two-Dimensional (P2D) model, describe the internal ion concentrations, potentials, and intercalation kinetics using coupled Partial Differential Equations (PDEs) \cite{pde_pinn}. While highly accurate and scientifically interpretable, these ``white-box'' models are computationally prohibitive for the low-power microcontrollers found in standard EVs. Furthermore, they require the identification of over 20 specific electrochemical parameters (e.g., diffusion coefficients, reaction rate constants, pore tortuosity), many of which can only be determined through destructive testing. This renders them impractical for generalized use across different battery chemistries or for aging batteries where these parameters drift over time \cite{unmeasurable_states}.
+
+\section{The Rise of Data-Driven and Hybrid Approaches}
+
+The limitations of purely physical models have catalyzed a massive shift toward ``black-box'' data-driven approaches in the academic literature. With the advent of large-scale open-source datasets from institutions like the NASA Prognostics Center of Excellence (PCoE) and the Center for Advanced Life Cycle Engineering (CALCE), researchers have demonstrated that deep learning architectures can map voltage, current, and temperature inputs directly to SOH outputs with remarkable accuracy \cite{machine_learning_web}. Models like Long Short-Term Memory (LSTM) networks and Gated Recurrent Units (GRU) have become the standard for handling time-series battery data due to their ability to capture temporal dependencies and history-dependent degradation \cite{zhang_rnn}.
+
+However, purely data-driven models suffer from three fundamental flaws that limit their industrial adoption:
+\begin{enumerate}
+    \item \textbf{Lack of Interpretability:} They operate as ``black boxes,'' offering no insight into \textit{why} a battery is degrading. A fleet operator cannot determine if a capacity drop is due to recoverable conditions (like low temperature) or irreversible aging.
+    \item \textbf{Physical Inconsistency:} A deep learning model trained on noisy data might learn to predict that a battery's capacity spontaneously increases (self-healing), violating the second law of thermodynamics. Such predictions reduce user trust and can confuse BMS logic \cite{ref1_general}.
+    \item \textbf{Data Hunger and Generalization:} These models require massive labeled datasets to generalize effectively. In real-world scenarios, ``run-to-failure'' data is scarce because vehicles are rarely driven until the battery completely dies. Furthermore, models trained on one battery chemistry or load profile often fail catastrophically when applied to another, known as the ``domain shift'' problem \cite{hybridonet_adapt}.
+\end{enumerate}
+
+This thesis develops a \textbf{Hybrid} approach that occupies the optimal middle ground. By integrating physical laws into the deep learning optimization process—a technique known as \textit{Physics-Informed Machine Learning (PIML)}—the framework is both accurate and physically consistent. Specifically, it is a ``Physics-Regularized'' framework in which the neural network is constrained by simple, empirically derived Ordinary Differential Equations (ODEs) rather than complex PDEs. This choice is strategic, aiming to retain the interpretability benefits of PIML while ensuring the computational feasibility required for real-world edge deployment \cite{jafari_cnn_gru}.
+
+\section{Problem Statement and Research Gap}
+
+While the literature abounds with battery prognostic methods, a critical analysis reveals specific gaps that this thesis addresses. 
+
+Most existing \textbf{Physics-Informed Neural Networks (PINNs)} in the battery domain focus on solving cell-level electrochemistry (e.g., the Single Particle Model) using neural networks as surrogate PDE solvers \cite{wang_pinn}. While scientifically rigorous, these approaches are often \textit{more} computationally expensive to train than standard data-driven models due to the calculation of spatial derivatives and residuals at every step \cite{pine_survey}. There is a distinct lack of research on ``lightweight'' PINNs that utilize simple, empirical ODEs (like the Verhulst or Double-Exponential models) to regularize standard RNNs for system-level prognostics.
+
+Furthermore, existing hybrid models often use static weights to balance the data loss and physics loss, which requires exhaustive manual tuning. The application of dynamic loss balancing strategies, such as uncertainty weighting, remains under-explored in this specific context.
+
+Therefore, the core problem this thesis addresses is: \textbf{How to estimate SOH and RUL with high accuracy and physical consistency on resource-constrained hardware, given limited and noisy training data?}
+
+\section{Research Objectives}
+
+The primary objective of this thesis is to develop and validate a hybrid deep learning framework for battery prognostics that outperforms traditional methods in terms of data efficiency, physical plausibility, and computational feasibility. The specific objectives of this thesis are:
+
+\begin{itemize}
+    \item \textbf{Comprehensive Literature Review:} To systematically analyze the state-of-the-art in SOH/RUL estimation, identifying the specific limitations of current PINN implementations (which rely heavily on computationally expensive PDEs) and establishing the theoretical basis for ODE-based regularization.
+    \item \textbf{Hybrid Architecture Development:} To design a novel deep learning architecture that integrates a Gated Recurrent Unit (GRU) network with empirical degradation models (Verhulst and Double-Exponential) via a composite loss function. This objective specifically addresses the need for a ``lightweight'' PINN suitable for edge computing.
+    \item \textbf{Advanced Loss Formulation:} To implement a dynamic loss weighting strategy based on homoscedastic uncertainty (Bayesian approximation) that automates the balancing of ``data loss'' and ``physics loss,'' and to test it empirically against static weighting (Chapter~\ref{ch:results}).
+    \item \textbf{Rigorous Benchmarking:} To establish performance baselines using purely model-based methods (curve fitting) and purely data-driven methods (Standard GRU, SVR). This comparative analysis is crucial for quantifying the specific value-add of the hybrid approach, addressing the feedback regarding the necessity of model-driven baselines.
+    \item \textbf{Validation on Diverse Datasets:} To validate the model's robustness and generalizability using distinct datasets (NASA PCoE for constant loading, CALCE for dynamic loading), focusing on the model's ability to handle data artifacts like ``capacity regeneration'' without making physically impossible predictions.
+    \item \textbf{Quantification of Computational Cost:} To evaluate the inference time and parameter count of the proposed hybrid model against Transformer baselines, ensuring suitability for resource-constrained Battery Management Systems (BMS)
+
+    
+\end{itemize}
+
+\section{Organization of the Report}
+
+The remainder of this thesis is organized as follows.
+
+\textbf{Chapter 2} presents an exhaustive review of the literature , categorizing existing methodologies into model-based, data-driven, and hybrid paradigms, and identifies specific research gaps.
+
+\textbf{Chapter 3} provides the formal problem definition, detailing the mathematical formulation of SOH and the physics-informed constraints. 
+
+\textbf{Chapter 4} outlines the theoretical methodology, including the GRU architecture and the uncertainty-weighted loss function. 
+
+\textbf{Chapter 5} analyzes the datasets and the feature engineering strategy required to extract meaningful health indicators, and defines the evaluation protocol and baselines.
+
+\textbf{Chapter 6} presents the measured experimental results: the model benchmark, the central finding on learnable vs.\ fixed physics, the prognostic (PHM) assessment, the ablation studies, and the deployment footprint.
+
+\textbf{Chapter 7} concludes the thesis and outlines future work.
