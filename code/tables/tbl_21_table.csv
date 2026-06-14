@@ -1,0 +1,4 @@
+model,params,train_rmse,test_rmse,gap
+Transformer (light),17409,0.0362,0.0397,0.0036
+Transformer (heavy),225313,0.0412,0.0466,0.0054
+Hybrid (route A),41281,0.0256,0.032,0.0064
