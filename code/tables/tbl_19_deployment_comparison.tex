@@ -1,0 +1,13 @@
+\begin{table}
+\caption{Light vs. heavy Transformer vs. deployable Hybrid: LOCO accuracy, physical consistency, Cortex-M4 footprint, and deployment validation.}
+\label{tab:deployment_comparison}
+\begin{tabular}{lrrrrrrl}
+\toprule
+Model & Params & SOH RMSE & Phys. cons. & int8 flash [KB] & act. RAM [KB] & M4 latency [ms] & Fits M4 \\
+\midrule
+Transformer (light) & 17409 & 0.0395 & 0.7950 & 22.4000 & 2.5000 & 1.0600 & yes \\
+Transformer (heavy) - SOTA & 398721 & 0.0394 & 0.8950 & 405.2000 & 10.0000 & 24.7100 & yes \\
+Hybrid route B (deployed) & 11009 & 0.0298 & 0.9150 & 11.7000 & 1.2500 & 1.2700 & yes \\
+\bottomrule
+\end{tabular}
+\end{table}

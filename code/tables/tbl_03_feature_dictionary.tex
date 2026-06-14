@@ -1,20 +1,20 @@
 \begin{table}
-\caption{feature dictionary}
+\caption{Engineered per-cycle features used for SOH estimation.}
 \label{tab:feature_dictionary}
-\begin{tabular}{llll}
+\begin{tabular}{lll}
 \toprule
- & feature & group & description \\
+feature & group & description \\
 \midrule
-0 & ica\_peak\_voltage\_V & ICA & Voltage of the dominant dQ/dV peak on the CC-charge curve \\
-1 & ica\_peak\_magnitude & ICA & Height of that dQ/dV peak (phase-transition strength) \\
-2 & ica\_peak\_prominence & ICA & Topographic prominence of the peak (robust height) \\
-3 & ica\_area & ICA & ∫ dQ/dV dV over the window (≈ charge throughput) \\
-4 & discharge\_time\_s & discharge & Duration of the discharge segment \\
-5 & v\_min & discharge & Minimum voltage during discharge \\
-6 & v\_mean & discharge & Mean discharge voltage \\
-7 & v\_var & discharge & Intra-cycle voltage variance \\
-8 & temp\_rise\_C & discharge & Max−min temperature during discharge (NASA only) \\
-9 & ir\_proxy\_ohm & resistance & Internal resistance (CALCE column / NASA |ΔV/ΔI| proxy) \\
+ica\_peak\_voltage\_V & ICA & Voltage of the dominant dQ/dV peak on the CC-charge curve \\
+ica\_peak\_magnitude & ICA & Height of that dQ/dV peak (phase-transition strength) \\
+ica\_peak\_prominence & ICA & Topographic prominence of the peak (robust height) \\
+ica\_area & ICA & $\int$ dQ/dV dV over the window ($\approx$ charge throughput) \\
+discharge\_time\_s & discharge & Duration of the discharge segment \\
+v\_min & discharge & Minimum voltage during discharge \\
+v\_mean & discharge & Mean discharge voltage \\
+v\_var & discharge & Intra-cycle voltage variance \\
+temp\_rise\_C & discharge & Max$-$min temperature during discharge (NASA only) \\
+ir\_proxy\_ohm & resistance & Internal resistance (CALCE column / NASA |$\Delta$V/$\Delta$I| proxy) \\
 \bottomrule
 \end{tabular}
 \end{table}

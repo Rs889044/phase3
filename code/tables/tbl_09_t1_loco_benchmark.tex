@@ -1,18 +1,19 @@
 \begin{table}
-\caption{t1 loco benchmark}
+\caption{NASA leave-one-cell-out benchmark: accuracy, physical consistency, and cross-dataset RMSE.}
 \label{tab:t1_loco_benchmark}
-\begin{tabular}{llrlllll}
+\begin{tabular}{lrlllll}
 \toprule
- & Model & Params & SOH RMSE & SOH MAE & Phys.Cons. & α-λ & Cross RMSE \\
+Model & Params & SOH RMSE & SOH MAE & Phys.Cons. & $\alpha$-$\lambda$ & Cross RMSE \\
 \midrule
-0 & Double-exp fit & 4 & 0.0449 ± 0.0065 & 0.0397 & 0.995 & 0.72 & 0.6721 \\
-1 & SVR & 6966 & 0.0495 ± 0.0106 & 0.0371 & 0.732 & 0.72 & 0.1566 \\
-2 & Transformer & 17409 & 0.0395 ± 0.0100 & 0.0361 & 0.795 & 0.62 & 0.0627 \\
-3 & LSTM & 5409 & 0.0331 ± 0.0101 & 0.0297 & 0.814 & 0.63 & 0.0864 \\
-4 & GRU & 4065 & 0.0417 ± 0.0106 & 0.0374 & 0.776 & 0.71 & 0.1391 \\
-5 & Neural-ODE & 1233 & 0.0374 ± 0.0116 & 0.0334 & 0.675 & 0.59 & 0.1518 \\
-6 & Hybrid (route B) & 41473 & 0.0307 ± 0.0057 & 0.0266 & 0.939 & 0.70 & 0.0802 \\
-7 & Hybrid (route A) & 41281 & 0.0371 ± 0.0083 & 0.0329 & 0.894 & 0.59 & 0.0974 \\
+Double-exp fit & 4 & 0.0449 $\pm$ 0.0065 & 0.0397 & 0.995 & 0.72 & 0.6721 \\
+SVR & 6966 & 0.0495 $\pm$ 0.0106 & 0.0371 & 0.732 & 0.72 & 0.1566 \\
+Transformer (light) & 17409 & 0.0395 $\pm$ 0.0100 & 0.0361 & 0.795 & 0.62 & 0.0627 \\
+Transformer (heavy) & 398721 & 0.0394 $\pm$ 0.0074 & 0.0347 & 0.895 & 0.65 & 0.0612 \\
+LSTM & 5409 & 0.0331 $\pm$ 0.0101 & 0.0297 & 0.814 & 0.63 & 0.0864 \\
+GRU & 4065 & 0.0417 $\pm$ 0.0106 & 0.0374 & 0.776 & 0.71 & 0.1391 \\
+Neural-ODE & 1233 & 0.0378 $\pm$ 0.0111 & 0.0338 & 0.695 & 0.70 & 0.1401 \\
+Hybrid (route B) & 41473 & 0.0307 $\pm$ 0.0057 & 0.0266 & 0.939 & 0.70 & 0.0802 \\
+Hybrid (route A) & 41281 & 0.0368 $\pm$ 0.0087 & 0.0328 & 0.893 & 0.59 & 0.0974 \\
 \bottomrule
 \end{tabular}
 \end{table}

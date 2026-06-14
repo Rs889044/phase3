@@ -1,0 +1,14 @@
+\begin{table}
+\caption{Winning hyperparameter configurations from the search (development fold).}
+\label{tab:hpo_winning_configs}
+\begin{tabular}{lrlrr}
+\toprule
+model & val\_RMSE & params & seq & hidden \\
+\midrule
+hybrid route-A double-exp & 0.0092 & $\sim$11k & 10 & 32 \\
+GRU & 0.0112 & $\sim$4k & 15 & 32 \\
+Transformer & 0.0114 & $\sim$17k & 8 & 32 \\
+hybrid route-B ODE & 0.0129 & $\sim$11k & 10 & 32 \\
+\bottomrule
+\end{tabular}
+\end{table}

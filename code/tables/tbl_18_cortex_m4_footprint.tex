@@ -1,13 +1,14 @@
 \begin{table}
-\caption{cortex m4 footprint}
+\caption{Cortex-M4 deployment footprint: flash, RAM, and analytic latency.}
 \label{tab:cortex_m4_footprint}
-\begin{tabular}{llrrrrrrrrr}
+\begin{tabular}{lrrrrrrrrr}
 \toprule
- & model & params & fp32\_kb & int8\_kb & macs & act\_ram\_kb & est\_m4\_latency\_ms & fits\_flash & fits\_ram & soh\_rmse(B0018) \\
+model & params & fp32\_kb & int8\_kb & macs & act\_ram\_kb & est\_m4\_latency\_ms & fits\_flash & fits\_ram & soh\_rmse(B0018) \\
 \midrule
-0 & hybrid\_B\_small & 11009 & 46.8000 & 11.7000 & 101328 & 1.2500 & 1.2670 & True & True & 0.0202 \\
-1 & gru\_small & 4065 & 18.1000 & 4.5000 & 38432 & 1.2500 & 0.4800 & True & True & 0.0199 \\
-2 & transformer & 17409 & 89.7000 & 22.4000 & 84512 & 2.5000 & 1.0560 & True & True & 0.0205 \\
+hybrid\_B\_small & 11009 & 46.8000 & 11.7000 & 101328 & 1.2500 & 1.2670 & True & True & 0.0202 \\
+gru\_small & 4065 & 18.1000 & 4.5000 & 38432 & 1.2500 & 0.4800 & True & True & 0.0199 \\
+transformer\_light & 17409 & 89.7000 & 22.4000 & 84512 & 2.5000 & 1.0560 & True & True & 0.0205 \\
+transformer\_heavy & 398721 & 1620.9000 & 405.2000 & 1976448 & 10.0000 & 24.7060 & True & True & 0.0232 \\
 \bottomrule
 \end{tabular}
 \end{table}

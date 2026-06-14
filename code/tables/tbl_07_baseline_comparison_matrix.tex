@@ -1,18 +1,19 @@
 \begin{table}
-\caption{baseline comparison matrix}
+\caption{Benchmark models: type and role in the study.}
 \label{tab:baseline_comparison_matrix}
-\begin{tabular}{llll}
+\begin{tabular}{lll}
 \toprule
- & model & type & role in the study \\
+model & type & role in the study \\
 \midrule
-0 & Double-exp fit & empirical curve fit & physical floor — if a fixed curve matches the NN, the NN adds nothing \\
-1 & SVR & classic ML (non-recurrent) & data-driven floor on flattened windows \\
-2 & GRU & recurrent baseline & lightweight RNN reference \\
-3 & LSTM & recurrent baseline & stronger RNN (more gates/params) \\
-4 & Transformer & attention baseline & heavy, accurate reference for the gap analysis \\
-5 & Neural-ODE & genuine PIML & continuous-time latent dynamics; extreme-hardware comparator \\
-6 & Hybrid route A & PINN (closed-form prior) & penalize deviation from the fitted curve; no autograd solver \\
-7 & Hybrid route B & PINN (ODE residual) & learnable Verhulst residual; the main proposed model \\
+Double-exp fit & empirical curve fit & physical floor --- if a fixed curve matches the NN, the NN adds nothing \\
+SVR & classic ML (non-recurrent) & data-driven floor on flattened windows \\
+GRU & recurrent baseline & lightweight RNN reference \\
+LSTM & recurrent baseline & stronger RNN (more gates/params) \\
+Transformer (light) & attention baseline & edge-sized attention model (matched to deployable budget) \\
+Transformer (heavy) & attention SOTA & large attention model --- the state-of-the-art accuracy reference \\
+Neural-ODE & genuine PIML & continuous-time latent dynamics; extreme-hardware comparator \\
+Hybrid route A & PINN (closed-form prior) & penalize deviation from the fitted curve; no autograd solver \\
+Hybrid route B & PINN (ODE residual) & learnable Verhulst residual; the main proposed model \\
 \bottomrule
 \end{tabular}
 \end{table}

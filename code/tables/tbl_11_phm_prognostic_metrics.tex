@@ -1,18 +1,19 @@
 \begin{table}
-\caption{phm prognostic metrics}
+\caption{Prognostic health-management metrics (Saxena \& Goebel), LOCO mean.}
 \label{tab:phm_prognostic_metrics}
 \begin{tabular}{lrrrr}
 \toprule
- & α-λ accuracy & Prognostic horizon & CRA & Phys. consistency \\
+ & $\alpha$-$\lambda$ accuracy & Prognostic horizon & CRA & Phys. consistency \\
 \midrule
 Double-exp fit & 0.7160 & 83.2500 & 0.3650 & 0.9950 \\
 SVR & 0.7170 & 82.7500 & 0.4750 & 0.7320 \\
-Transformer & 0.6170 & 73.9170 & -0.0950 & 0.7950 \\
+Transformer (light) & 0.6170 & 73.9170 & -0.0950 & 0.7950 \\
+Transformer (heavy) & 0.6450 & 83.0830 & -0.0060 & 0.8950 \\
 LSTM & 0.6350 & 79.3330 & 0.1790 & 0.8140 \\
 GRU & 0.7060 & 80.0830 & 0.2020 & 0.7760 \\
-Neural-ODE & 0.5870 & 73.4170 & -0.2290 & 0.6750 \\
+Neural-ODE & 0.6990 & 82.6670 & 0.3460 & 0.6950 \\
 Hybrid (route B) & 0.6990 & 80.0830 & 0.3030 & 0.9390 \\
-Hybrid (route A) & 0.5880 & 73.5830 & -0.1990 & 0.8940 \\
+Hybrid (route A) & 0.5890 & 73.3330 & -0.2000 & 0.8930 \\
 \bottomrule
 \end{tabular}
 \end{table}
