@@ -569,7 +569,8 @@ within-cycle representations is left as future work.
 
 \begin{table}[H]
 \centering
-\caption{Aggregation ablation (route-B hybrid, mean over 2 folds $\times$ 2 seeds).}
+\caption{Aggregation ablation (route-A hybrid with double-exponential prior, mean
+over 2 folds $\times$ 2 seeds).}
 \label{tab:aggregation}
 \begin{tabular}{l c c}
 \toprule
@@ -583,7 +584,8 @@ Minimal (2 features) & 0.0442 & \textbf{0.907} \\
 
 \textbf{Data-volume ablation.} Table~\ref{tab:datavolume} subsamples a stratified
 fraction (25\%/50\%/75\%/100\%) of \emph{each} training cell's cycles for the
-route-B hybrid. There is \emph{no} clean monotonic trend (the values sit in a
+route-A hybrid (the inexpensive hybrid representative, as in the scarcity stress
+test). There is \emph{no} clean monotonic trend (the values sit in a
 narrow $0.027$--$0.035$ band and 100\% is, if anything, marginally worst): with
 only two folds $\times$ two seeds the comparison is noise-dominated. The honest
 reading is that on this small, clean dataset the hybrid is \emph{not
@@ -598,7 +600,7 @@ training cell remains represented.)
 
 \begin{table}[H]
 \centering
-\caption{Data-volume ablation (route-B hybrid, stratified per-cell subsample, mean
+\caption{Data-volume ablation (route-A hybrid, stratified per-cell subsample, mean
 over 2 folds $\times$ 2 seeds).}
 \label{tab:datavolume}
 \begin{tabular}{l c c}
@@ -625,8 +627,10 @@ $<1$\,MB, 80\,MHz). The measured footprint is in Table~\ref{tab:footprint}.
 
 \begin{table}[H]
 \centering
-\caption{Measured deployment footprint after int8 quantisation. Sizes are from
-PyTorch quantisation + ONNX export; the Cortex-M4 latency is an analytic
+\caption{Deployment footprint. Parameter counts, fp32 sizes, MACs and activation
+RAM are measured on the trained models (state-dict serialisation and forward
+hooks); the int8 column is the standard $4\times$ post-training-quantisation
+estimate of the fp32 weight size, and the Cortex-M4 latency is an analytic
 MACs/clock (CMSIS-NN-style) estimate. These supersede the placeholder estimates of
 the earlier report.}
 \label{tab:footprint}
@@ -680,10 +684,42 @@ benchmark size to the deployable 11k costs essentially nothing: evaluated on the
 same full four-fold leave-one-cell-out protocol, the matched-size model scores
 SOH RMSE $0.0305\pm0.0085$ with physical consistency $0.924$ --- statistically
 identical to the $4\times$ larger model ($0.0307$) --- so the ``lightweight''
-claim is earned at the size actually deployed, by measurement rather than
-assertion. (As noted in Chapter~\ref{ch:datasets_implementation}, the deployment
-stack is \textbf{PyTorch + ONNX} rather than TensorFlow Lite Micro, and the M4
-latency is an analytic estimate, not an on-board measurement.)
+claim is earned at the size actually deployed. Two methodological notes keep this
+honest. First, as stated in Chapter~\ref{ch:datasets_implementation}, the int8
+sizes are $4\times$ post-training-quantisation estimates and the M4 latency is
+analytic, not an on-board measurement. Second, the MAC counter instruments only
+the linear and recurrent layers, so the Transformers' attention matrix products
+($QK^\top$ and $AV$) are \emph{not} counted --- a bias in the Transformers'
+favour, which makes the hybrid's reported latency advantage conservative.
+
+\section{Implementation Caveats}
+\label{sec:caveats}
+
+For completeness, four implementation details that bound the claims are recorded
+here rather than left implicit:
+
+\begin{itemize}
+    \item \textbf{Life-fraction input.} The route-B backbone receives a
+    normalized cycle coordinate whose test-time normalization uses the test
+    trajectory's own length --- information not available online. This is a mild
+    optimistic bias for route~B; the profiled deployment path runs with a zeroed
+    coordinate, and a fixed-scale normalization that aligns the evaluated and
+    deployed paths is future work.
+    \item \textbf{Quantisation and latency.} Int8 flash figures are $4\times$
+    post-training-quantisation estimates of measured fp32 sizes; the M4 latency
+    is analytic (and conservative toward the Transformers, whose attention
+    matrix products are excluded from the MAC count).
+    \item \textbf{RUL persistence.} EOL \emph{labels} use the 5-cycle persistence
+    rule of Chapter~\ref{ch:datasets_implementation}; the RUL curves derived
+    from \emph{predicted} SOH trajectories at evaluation time use a 3-cycle
+    persistence, a slightly more responsive setting applied identically to every
+    model, so PHM comparisons between models are unaffected.
+    \item \textbf{PHM metric coverage.} $\alpha$-$\lambda$, PH and CRA are
+    computable only where both the true and the predicted trajectory cross the
+    EOL threshold; folds where a model never predicts EOL drop out of that
+    model's PHM average. This affects all models symmetrically but means the PHM
+    columns average over slightly different fold subsets.
+\end{itemize}
 
 \section{Summary of Findings}
 \label{sec:results_summary}

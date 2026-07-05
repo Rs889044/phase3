@@ -62,8 +62,10 @@ interim ``the hybrid always wins'' narrative:
     transparent, physically meaningful degradation law rather than fabricated
     coefficients.
     \item \textbf{Lightweight by measurement, not assertion.} A matched-size
-    route-B hybrid (hidden $=32$, $\approx$11k parameters) quantises to
-    \textbf{11.7~KB} of int8 flash with \textbf{1.25~KB} of activation RAM ---
+    route-B hybrid (hidden $=32$, $\approx$11k parameters) comes to
+    \textbf{11.7~KB} of int8 flash ($4\times$ post-training-quantisation
+    estimate of the measured fp32 size) with \textbf{1.25~KB} of measured
+    activation RAM ---
     $1/20$ the flash and $1/11$ the latency of the SOTA-scale Transformer ---
     while being \emph{more} accurate ($0.0305$ vs.\ $0.0428$) and retaining the
     full-size model's leave-one-cell-out accuracy. It uses 1.1\% of the
@@ -95,10 +97,11 @@ extend its value:
     in early epochs (letting the network establish empirical convergence before the
     physical constraint tightens) could recover route~A's accuracy on typical cells
     without its failure mode on atypical ones.
-    \item \textbf{On-board latency validation.} The Cortex-M4 latency reported here
-    is an analytic MACs/clock estimate. Flashing the ONNX/int8 model to a physical
-    M4 board and measuring wall-clock inference and energy per window would close
-    the deployment loop.
+    \item \textbf{On-board deployment validation.} The int8 sizes are $4\times$
+    quantisation estimates and the Cortex-M4 latency is an analytic MACs/clock
+    estimate. Producing a genuinely quantised export (ONNX or TFLite-Micro),
+    flashing it to a physical M4 board, and measuring wall-clock inference and
+    energy per window would close the deployment loop.
     \item \textbf{Broader chemistries and operating conditions.} Both datasets are
     LCO; validating on LFP/NMC cells and on field-collected partial-cycle data would
     test the framework beyond the cross-load/cross-form-factor transfer studied
