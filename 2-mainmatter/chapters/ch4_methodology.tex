@@ -70,7 +70,7 @@ This efficient architecture ($O(L)$ complexity) makes it superior to Transformer
 
 A major challenge in training hybrid models is determining the optimal values for the hyperparameters $\lambda_{data}$ and $\lambda_{phys}$. If $\lambda_{phys}$ is set too high, the model becomes overly rigid and ignores the nuances of the data. If set too low, the physical constraint is ineffective. Manual tuning of these weights is time-consuming and often suboptimal.
 
-To solve this, we adopt the \textbf{Homoscedastic Uncertainty Weighting} approach proposed by Kendall et al. and applied to batteries by Wen et al. \cite{verhulst_pso}. This method interprets the multi-objective loss minimization as maximizing the Gaussian log-likelihood of the model. The composite loss function is reformulated as:
+To solve this, we adopt the \textbf{Homoscedastic Uncertainty Weighting} approach proposed by Kendall et al. \cite{kendall_uncertainty} and applied to batteries by Wen et al. \cite{pde_pinn}. This method interprets the multi-objective loss minimization as maximizing the Gaussian log-likelihood of the model. The composite loss function is reformulated as:
 
 \begin{equation}
     \mathcal{L}(\theta, \sigma_{data}, \sigma_{phys}) = \frac{1}{2\sigma_{data}^2} \mathcal{L}_{data} + \frac{1}{2\sigma_{phys}^2} \mathcal{L}_{phys} + \log \sigma_{data} + \log \sigma_{phys}
