@@ -233,10 +233,12 @@ To ensure rigorous testing, distinct splitting strategies are employed for the s
 \begin{itemize}
     \item \textbf{NASA Dataset (B0005, B0006, B0007, B0018):}
     We employ a Leave-One-Cell-Out (LOCO) cross-validation scheme to maximize data
-    utility while preventing data leakage. This yields \emph{four} folds (each cell
-    held out in turn, training on the other three), and each fold is repeated over
-    3 random seeds for stable confidence intervals. Scalers and physics priors are
-    fit on the training cells only.
+    utility while preventing data leakage. This yields \emph{four} folds: in each
+    fold one cell is held out for \emph{test}, a second cell is held out for
+    \emph{validation} (early stopping and model selection), and the model is
+    trained on the remaining two cells --- whole cells never mix across splits.
+    Each fold is repeated over 3 random seeds for stable confidence intervals.
+    Scalers and physics priors are fit on the training cells only.
     \item \textbf{Cross-Dataset Generalization:}
     To validate the model's ability to handle domain shifts, the model is trained on
     the complete NASA dataset and evaluated directly (zero-shot) on CALCE CS2\_35
@@ -287,7 +289,9 @@ To satisfy the requirement for rigorous evaluation, the following comparison mat
 
 \textbf{Data-Driven (Classical)} & Support Vector Regression (RBF) & \textbf{Non-Recurrent Control:} A strong shallow regressor on the same windowed features. Isolates the value of \emph{temporal} sequence modelling --- if the recurrent nets do not beat it, the sequence machinery is not earning its place. \\
 
-\textbf{Data-Driven} & Transformer & \textbf{Complexity Benchmark:} A high-capacity model used to determine if pure data-driven "brute force" can outperform physics-guided learning in data-scarce scenarios. \\
+\textbf{Data-Driven (Attention)} & Transformer --- \emph{light} ($\approx$17k params) and \emph{heavy} ($\approx$225k params) & \textbf{Complexity Benchmark:} Two attention scales. The \emph{light} model is edge-sized and hyperparameter-tuned like every baseline; the \emph{heavy} model is the SOTA-scale accuracy reference, testing whether pure data-driven ``brute force'' can outperform physics-guided learning in data-scarce scenarios. \\
+
+\textbf{Physics-Informed (Alternative)} & Neural-ODE & \textbf{PIML Control:} A genuine continuous-time physics-informed alternative (latent ODE dynamics). Ensures the proposed hybrid is compared against another physics-motivated architecture, not only black boxes. \\
 
 \textbf{Hybrid (Proposed)} & \textbf{Hybrid PINN (Physics-Regularized)} & \textbf{The Solution:} Evaluated on RMSE, data efficiency (25\%--100\% volume), and the ability to maintain physical consistency during extrapolation. \\
 
@@ -301,7 +305,7 @@ Both non-learned floors --- the double-exponential curve fit and the SVR --- are
 quantified head-to-head with the neural models in Chapter~\ref{ch:results}
 (Table~\ref{tab:benchmark}); the learned models are required to beat them for the
 AI component to be justified.
-\noindent \textbf{Sufficiency of Data Volume:} While deep learning approaches typically require massive labeled datasets to generalize, \textbf{Physics-Informed models are inherently data-efficient}. The integration of physical equations constrains the optimization search space, effectively guiding the model even when data is sparse. Therefore, the combined cycle count of the available NASA and CALCE datasets is considered sufficient to test the core hypothesis: that the hybrid model can achieve superior generalization in limited-data regimes compared to pure data-driven baselines.
+\noindent \textbf{Sufficiency of Data Volume:} While deep learning approaches typically require massive labeled datasets to generalize, \textbf{Physics-Informed models are hypothesised to be data-efficient}: the integration of physical equations constrains the optimization search space, guiding the model even when data is sparse. Rather than assume this, the thesis tests it directly --- via a data-volume ablation on the hybrid and a data-scarcity stress test pitting the hybrid against both Transformer scales at 10--100\% of the training cycles (Chapter~\ref{ch:results}, Sections~\ref{sec:overfitting} and~\ref{sec:ablations}). The combined cycle count of the NASA and CALCE datasets is sufficient for this hypothesis test precisely because the small-data regime is the regime of interest.
 
 \section{Resource Feasibility}
 
@@ -316,7 +320,8 @@ estimated): the deployable route-B hybrid is shrunk to a matched size (hidden $=
 $\approx$11k parameters), quantised to int8, and exported via \textbf{ONNX}. The
 table below summarises the deployment assumptions; the full \emph{measured}
 footprint table (int8 size, RAM, MACs, Cortex-M4 latency for the hybrid, GRU and
-Transformer) is reported in Chapter~\ref{ch:results}, Section~\ref{sec:footprint}.
+both Transformer scales) is reported in Chapter~\ref{ch:results},
+Section~\ref{sec:footprint}.
 
 % --- TABLE 5.3: RESOURCE PROFILE ---
 \begin{table}[H]

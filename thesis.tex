@@ -1,0 +1,64 @@
+%% See 'tutorial.pdf'
+\documentclass
+    [mtech,
+     smplmath]
+    {iitmdissertation}
+
+\usepackage{multirow}
+\usepackage{xurl}      % Allows URLs to break at any character (Fixes Pages 45-46)
+\usepackage{tabularx}  % Allows tables to fit exactly to page width (Fixes Pages 40 & 44)
+\usepackage{graphicx} % For images
+\usepackage{booktabs}  % For professional tables (\toprule, \midrule)
+\usepackage{float}     % For forcing figure placement with [H]
+\usepackage{array}     % For fixed column widths
+
+\dissertationDepartment      {Department of Chemical Engineering}
+\dissertationAuthorName      {Rajat Sharma}
+\dissertationDateOfBirth     {}
+\dissertationDegree          {Master Of Technology in Industrial Artificial Intelligence}
+\dissertationTitle           {Estimating Remaining Useful Life and State of Health of EV Batteries by Hybrid Physics-Informed Deep Learning Framework}
+\dissertationMonth           {March}
+\dissertationYear            {2026}
+\dissertationCertificateDate {March 2026}
+\dissertationType            {Thesis}
+\dissertationGuides          {Dr. Sandeep Patalay}
+\dissertationCommitteeName   {Doctoral Committee}
+\dissertationImage           {}
+
+\setupGlossaryAbbreviationsDefinitions
+\begin{document}
+  \prematter
+      %\input 0-prematter/pre-quote
+      %\input 0-prematter/pre-dedication
+      \printCertificate
+      %\input 0-prematter/pre-list-of-publications
+%%
+%%
+%%
+  \begin{FrontMatter}
+      % enable this if you have abbrevations in your report
+      \printGlossaryAndAbbreviations
+      % use this  if you have notations in your report
+      \printNotation
+  \end{FrontMatter}
+%%
+%%
+%%
+  \begin{MainMatter}
+      \input 2-mainmatter/chapters/ch1_introduction
+      \input 2-mainmatter/chapters/ch2_literature
+      \input 2-mainmatter/chapters/ch3_ProblemDefinition
+      \input 2-mainmatter/chapters/ch4_methodology
+      \input 2-mainmatter/chapters/ch5_Datasets_Implementation_plan.tex
+      \input 2-mainmatter/chapters/ch6_results.tex
+      \input 2-mainmatter/chapters/ch7_Conclusion.tex
+      \appendix
+      \input 2-mainmatter/appendices/appn-general-notes
+  \end{MainMatter}
+%%
+%%
+%%
+  \begin{BackMatter}
+      \printBibliographyReferences{references}      
+  \end{BackMatter}
+\end{document}

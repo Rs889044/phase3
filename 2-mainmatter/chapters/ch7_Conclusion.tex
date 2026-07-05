@@ -19,59 +19,75 @@ and double-exponential laws) and a \emph{learnable} ODE-residual whose parameter
 are trained jointly with the network (\textbf{route~B}). The framework was
 evaluated honestly on the full NASA leave-one-cell-out protocol (four folds,
 three seeds), a zero-shot cross-dataset transfer to CALCE, a complete physics-design
-ablation, and a measured Cortex-M4 deployment footprint.
+ablation with a de-confound control, data-scarcity and overfitting stress tests
+against two Transformer scales, and a measured Cortex-M4 deployment footprint.
 
 The measured results support a sharper and more defensible conclusion than the
 interim ``the hybrid always wins'' narrative:
 
 \begin{itemize}
     \item \textbf{Physics helps --- but the mechanism matters.} The
-    \emph{learnable} ODE-residual (route~B) is the robust winner: it is consistent
-    across every unseen cell (SOH RMSE $0.028$--$0.031$) and achieves the best
-    physical consistency of any model ($0.918$), significantly higher than the
-    Transformer on all 12 folds ($p\approx5\times10^{-4}$). Its mean SOH RMSE is
-    also $-38.6\%$ below the Transformer in-distribution, although with only four
-    cells that accuracy gap is not statistically significant ($p=0.077$). By
-    contrast, the \emph{fixed} closed-form prior
-    (route~A) helps typical cells but actively \emph{hurts} atypical ones --- it is
-    the weakest hybrid overall because a prior fit on other cells cannot describe a
-    cell such as B0006, which begins above rated capacity with heavy regeneration.
-    \item \textbf{Honest baselines.} The LSTM is the most accurate single baseline
-    on unseen NASA cells (RMSE $0.0262$, statistically tied with route~B), and the
-    Transformer generalises best across datasets. The route-B hybrid is the best
-    \emph{all-round} compromise of accuracy, physical plausibility, cross-dataset
-    robustness, and footprint --- precisely the balance a safety-critical BMS needs.
+    \emph{learnable} ODE-residual (route~B) is the robust winner: it attains the
+    lowest mean SOH RMSE of all benchmarked models ($0.0307$), is uniform across
+    every unseen cell (per-cell RMSE $0.025$--$0.037$), and achieves the best
+    physical consistency of any learned model ($0.939$), significantly higher than
+    the SOTA-scale Transformer on all 12 folds ($p\approx5\times10^{-4}$). Its
+    mean SOH RMSE is $28.3\%$ below that Transformer in-distribution, although
+    with only four cells the accuracy gap is not statistically significant
+    ($p=0.092$). By contrast, the \emph{fixed} closed-form prior (route~A) helps
+    typical cells but actively \emph{hurts} atypical ones --- a prior fit on other
+    cells cannot describe a cell such as B0006, which begins above rated capacity
+    with heavy regeneration.
+    \item \textbf{The Transformer motivation is confirmed and strengthened.} The
+    thesis set out from the position that attention models are the accuracy state
+    of the art but too heavy for standard BMS hardware. The measurements support
+    a stronger claim: under realistic per-fleet data scarcity, scaling the
+    Transformer to SOTA size (225k parameters, 13$\times$ the edge-sized variant)
+    made it \emph{less} accurate --- classic overfitting, confirmed by scarcity
+    and generalisation-gap stress tests --- while the physics-regularised hybrid
+    stayed flat from 10\% to 100\% of the training data. On small fleets, the
+    physics prior is worth more than $200$k extra attention parameters.
+    \item \textbf{Honest baselines.} The LSTM is the strongest purely data-driven
+    baseline on unseen NASA cells (RMSE $0.0331$, statistically tied with
+    route~B) but shares route~A's weakness on atypical cells, and the light
+    Transformer leads the (single-cell, low-confidence) cross-dataset transfer.
+    The route-B hybrid is the best \emph{all-round} compromise of accuracy,
+    physical plausibility, prognostic calibration (best learned CRA, $0.30$),
+    cross-dataset robustness, and footprint --- precisely the balance a
+    safety-critical BMS needs.
     \item \textbf{Interpretability with real parameters.} The physics priors were
     fit to real per-cell data (the double-exponential beats the logistic by AIC on
     every cell), and route~B learns its own Verhulst parameters
-    ($r\approx-0.81$, $K\approx0.93$) during training, giving the model a
+    ($r\approx-0.80$, $K\approx0.93$) during training, giving the model a
     transparent, physically meaningful degradation law rather than fabricated
     coefficients.
     \item \textbf{Lightweight by measurement, not assertion.} A matched-size
     route-B hybrid (hidden $=32$, $\approx$11k parameters) quantises to
     \textbf{11.7~KB} of int8 flash with \textbf{1.25~KB} of activation RAM ---
-    about half the Transformer's footprint --- while remaining more physically
-    consistent and retaining leave-one-cell-out accuracy. All profiled models fit
-    the Cortex-M4 budget ($<$256~KB RAM, $<$1~MB flash) with wide margins.
+    $1/20$ the flash and $1/11$ the latency of the SOTA-scale Transformer ---
+    while being \emph{more} accurate ($0.0305$ vs.\ $0.0428$) and retaining the
+    full-size model's leave-one-cell-out accuracy. It uses 1.1\% of the
+    Cortex-M4 flash budget ($<$256~KB RAM, $<$1~MB flash).
     \item \textbf{Reported transparently.} The homoscedastic uncertainty weighting
     did not have the impact we anticipated on this small, clean problem --- a
     well-chosen fixed weight performed as well or slightly better --- so the fixed
-    weight is adopted for the headline models. This is stated openly rather than
-    hidden; it gently refines the recommended recipe (dynamic loss balancing is a
-    sound mechanism but not free here) and the automatic weighting is expected to
-    earn its place on larger, noisier datasets.
+    weight is adopted for the headline models. Similarly, the de-confound ablation
+    attributes route~B's raw accuracy largely to its cycle-coordinate input, with
+    the ODE residual contributing the (statistically significant) physical
+    plausibility. Both findings are stated openly rather than hidden; the
+    automatic weighting is expected to earn its place on larger, noisier datasets.
 \end{itemize}
 
 In sum, the thesis demonstrates that a \emph{lightweight, learnable
 physics-regularised recurrent model} is a viable, trustworthy, and deployable
 pathway for the next generation of EV battery prognostics --- accurate where it
-matters, physically plausible by construction, robust to unseen cells, and small
-enough for on-board inference.
+matters, physically plausible by construction, robust to unseen cells and data
+scarcity, and small enough for on-board inference.
 
 \section{Future Work}
 
-The framework is complete and reproducible end-to-end (\texttt{make all}). Several
-avenues would extend its value:
+The framework is complete and reproducible end-to-end. Several avenues would
+extend its value:
 
 \begin{itemize}
     \item \textbf{Dynamic relaxation of the physics penalty.} The fixed-prior
@@ -87,6 +103,11 @@ avenues would extend its value:
     LCO; validating on LFP/NMC cells and on field-collected partial-cycle data would
     test the framework beyond the cross-load/cross-form-factor transfer studied
     here.
+    \item \textbf{More cells for statistical power.} With four NASA cells the
+    hybrid's large mean accuracy edge over the SOTA Transformer ($-28.3\%$) falls
+    short of significance; evaluating on larger fleets (e.g.\ the Toyota/MIT
+    dataset) would settle the accuracy question and re-test the uncertainty
+    weighting where it is expected to matter.
     \item \textbf{Per-cell online adaptation.} Because route~B learns its ODE
     parameters, a lightweight online update of those parameters during deployment
     could let a single shipped model specialise to the cell it is actually

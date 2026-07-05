@@ -34,11 +34,11 @@ The Verhulst model describes a system whose growth (or decay) is self-limiting. 
 
 Where:
 \begin{itemize}
-    \item $r$: The intrinsic degradation rate constant.
-    \item $K$: The carrying capacity, representing the theoretical lower bound of SOH (typically 0 or a failure threshold).
+    \item $r$: The intrinsic rate constant. With $r>0$ the logistic law describes saturating growth toward $K$; fitted to a \emph{decaying} SOH trajectory (or when learned jointly with the network, Chapter~\ref{ch:results}), $r$ takes a negative sign and the same law describes monotone fade.
+    \item $K$: The carrying capacity --- the asymptotic plateau of the S-curve. Because SOH is normalised by \emph{rated} capacity, fitted values of $K$ may exceed $1.0$ for cells whose measured initial capacity is above rating (as observed for the NASA cells in Chapter~\ref{ch:results}).
 \end{itemize}
 
-This model enforces a specific trajectory: an initial slow fade, a linear phase, and a saturation phase. By constraining the network to this derivative, we prevent non-physical predictions such as sudden capacity recovery ($\frac{dSOH}{dt} > 0$), which would violate the monotonic degradation logic inherent to thermodynamic aging \cite{ref1_general}.
+This model enforces a specific trajectory shape: an initial slow fade, a near-linear phase, and a saturation phase. By constraining the network's time-derivative to this law, we discourage non-physical predictions such as sustained capacity recovery ($\frac{dSOH}{dt} > 0$), which would violate the monotonic degradation logic inherent to thermodynamic aging \cite{ref1_general}.
 
 \subsection{The Double-Exponential Model}
 
