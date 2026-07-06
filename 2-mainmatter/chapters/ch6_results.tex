@@ -135,7 +135,7 @@ parameters are learned.
 \label{sec:main_benchmark}
 
 Table~\ref{tab:benchmark} and Figures~\ref{fig:benchmark_rmse}--\ref{fig:phys_cons}
-summarise the headline comparison across all folds and seeds.
+summarise the main comparison across all folds and seeds.
 
 \begin{table}[H]
 \centering
@@ -208,23 +208,23 @@ Several observations follow from Table~\ref{tab:benchmark}:
     The double-exponential curve fit reaches $0.0449$ and the SVR $0.0495$ on
     held-out cells. All recurrent, attention and hybrid models beat both floors.
     The Neural-ODE ($0.0505$) does \emph{not}: encoding only the final window
-    step and integrating a learned latent field is too weak for this task, and
-    this is reported plainly rather than hidden. The curve fit also transfers
+    step and integrating a learned latent field is too weak for this task; the
+    result is reported as measured. The curve fit also transfers
     poorly (Cross RMSE $0.67$ on the 878-cycle CALCE cell), and its near-perfect
     physical consistency ($0.995$) carries little information, since a fitted
     closed-form curve is monotone by construction.
-    \item \textbf{Attention capacity does not pay at this data scale.} The
+    \item \textbf{Additional attention capacity does not improve accuracy.} The
     edge-sized light Transformer reaches $0.0345$, and the 13$\times$ larger
     heavy model is worse, at $0.0418$. Section~\ref{sec:transformer_gap}
     quantifies the comparison against the hybrid.
-    \item \textbf{The LSTM's mean hides a failure mode.} Its wide interval
+    \item \textbf{The LSTM average masks a per-cell weakness.} Its wide interval
     ($\pm0.0182$) is driven by the atypical cell B0006, where its per-cell RMSE
     degrades to $0.068$ (Table~\ref{tab:perfold}) --- the same atypical-cell
     weakness the fixed prior shows, discussed next.
     \item \textbf{Cross-dataset transfer is led by the light Transformer}
     ($0.0859$), with route~A ($0.0963$), Neural-ODE ($0.0977$), LSTM ($0.0993$)
     and the heavy Transformer ($0.1018$) close behind. \textbf{Route~B degrades
-    to $0.2617$} out of distribution --- an honest negative result analysed in
+    to $0.2617$} out of distribution, a negative result analysed in
     Section~\ref{sec:transformer_gap}: its learned dynamics depend on the cycle
     coordinate, which extrapolates far outside the training range on the
     long-lived CALCE cell. Only one CALCE test cell is available, so all
@@ -276,7 +276,7 @@ held-out predictions on B0005.
     \includegraphics[width=0.85\textwidth]{2-mainmatter/chapters/soh_overlay_B0005.png}
     \caption{SOH trajectory on the held-out cell B0005. Models trained on the
     other cells tend to over-estimate SOH as the real capacity fades faster than
-    the training population suggests; over-estimation is the dangerous direction
+    the training population suggests; over-estimation is the more serious error
     for a BMS, since it makes the cell look healthier than it is. The hybrid
     stays closest to the measured curve.}
     \label{fig:soh_b0005}
@@ -290,7 +290,7 @@ uniform accuracy across cells and the best physical plausibility. Since training
 is performed offline, this is an acceptable trade for a safety-critical
 application.
 
-\section{The Transformer Question: Heavy Attention Does Not Pay on Scarce Data}
+\section{Comparison with the Transformer Baselines under Data Scarcity}
 \label{sec:transformer_gap}
 
 Chapters 1 and 2 motivated this work with the observation that attention models
@@ -388,13 +388,14 @@ of that capacity (Section~\ref{sec:footprint}).
     \label{fig:scarcity}
 \end{figure}
 
-\subsection{Cross-Dataset Transfer and an Honest Negative Result}
+\subsection{Cross-Dataset Transfer}
 \label{sec:cross_dataset}
 
 On the zero-shot NASA$\rightarrow$CALCE transfer the light Transformer leads
 ($0.0859$), with route~A, the Neural-ODE, the LSTM and the heavy Transformer
 between $0.096$ and $0.102$, and the plain GRU at $0.113$. \textbf{Route~B
-degrades to $0.2617$ --- the worst learned model out of distribution.} The
+degrades to $0.2617$, the weakest cross-dataset result among the learned
+models.} The
 mechanism is the cycle coordinate: CALCE CS2\_35 lives for 878 cycles, so the
 fixed-scale coordinate reaches $1.76$ at end-of-test, far outside the training
 range ($\le0.34$ on the NASA cells), and route~B's learned dynamics --- which
@@ -405,7 +406,7 @@ Two mitigations are identified for future work: saturating the coordinate at the
 training maximum, and running the deployed zeroed-coordinate path (which the
 footprint profiling already uses) for out-of-range cells. With only a single
 CALCE test cell, all cross-dataset rankings remain indicative; the in-distribution
-LOCO results are the load-bearing evidence of this thesis.
+LOCO results are the primary evidence of this thesis.
 
 \section{Prognostic (PHM) Assessment}
 \label{sec:phm}
@@ -445,8 +446,8 @@ The route-B hybrid gives the best-calibrated horizons of any learned model
 clearly positive), essentially matching the time-based curve fit on the PHM
 axes while far exceeding it on pointwise accuracy and transferability. Every
 purely data-driven model has near-zero or negative CRA: early-life RUL is
-inherently uncertain, and models without a usable degradation prior pay for it
-exactly there. Figure~\ref{fig:alpha_lambda} shows the $\alpha$-$\lambda$ RUL
+inherently uncertain, and models without a usable degradation prior are least
+reliable in that region. Figure~\ref{fig:alpha_lambda} shows the $\alpha$-$\lambda$ RUL
 prognosis for the hybrid on B0018, and Figure~\ref{fig:soh_b0018} overlays the
 predicted SOH trajectories on the same cell.
 
@@ -524,7 +525,7 @@ Four conclusions follow:
     Chapter~\ref{ch:methodology}: the automatic weighting of Section~4.3 is a
     sound mechanism, but on a dataset of this size a carefully chosen fixed
     weight performs equally well (here slightly better), so the fixed weight is
-    used for the headline models.
+    used for the main benchmark models.
     \item \textbf{Within route~A the double-exponential prior beats the
     logistic} ($0.0343$ vs.\ $0.0386$), consistent with the AIC verdict of
     Table~\ref{tab:prior_fits}.
@@ -648,7 +649,8 @@ favour, which makes the hybrid's reported latency advantage conservative.
     \centering
     \includegraphics[width=1.0\textwidth]{2-mainmatter/chapters/frontier_vs_sota.png}
     \caption{The accuracy-vs-memory frontier. (Left) the deployed 11k-parameter
-    hybrid occupies the favourable lower-left corner: more accurate than both
+    hybrid lies in the lower-left region of the accuracy--memory plane: more
+    accurate than both
     Transformers at a fraction of the size. (Right) the deployed hybrid relative
     to the heavy Transformer on every axis.}
     \label{fig:frontier}
@@ -707,7 +709,7 @@ The measured evaluation supports the following conclusions:
     heavy Transformer ($-37.5\%$ mean RMSE) and all 12 on physical consistency
     --- reported descriptively, since four independent cells cannot support
     formal significance.
-    \item \textbf{Negative results, stated plainly.} The homoscedastic
+    \item \textbf{Negative results.} The homoscedastic
     uncertainty weighting did not improve on a well-chosen fixed weight; the
     Neural-ODE baseline failed to clear the curve-fit floor; the data-volume and
     overfitting sweeps were noise-dominated at their reduced protocol; and
@@ -726,7 +728,8 @@ The measured evaluation supports the following conclusions:
 These outcomes replace the interim report's claim that the hybrid always wins
 with a more precise conclusion: a lightweight recurrent model with a learnable
 physics regulariser is the best-balanced choice for deployable battery
-prognostics in-distribution, a heavyweight attention model is neither small
-enough for the edge nor more accurate at realistic data volumes, and the
-framework's remaining weakness --- long-horizon extrapolation of the cycle
-coordinate across datasets --- is identified, explained, and addressable.
+prognostics in-distribution, and a heavyweight attention model is neither
+small enough for the edge nor more accurate at realistic data volumes. The
+framework's remaining weakness, long-horizon extrapolation of the cycle
+coordinate across datasets, is identified and explained, and has clear
+mitigations.

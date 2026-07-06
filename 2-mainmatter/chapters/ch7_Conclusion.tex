@@ -46,15 +46,16 @@ than the interim report's claim that the hybrid always wins:
     $0.0345$), and the hybrid beat the heavy model on 11 of 12 runs ($-37.5\%$
     mean RMSE) and on physical consistency in all 12 --- reported descriptively,
     since four independent cells cannot support formal significance. The
-    additional attention capacity did not pay; the physics prior did.
+    additional attention capacity did not improve the results; the physics
+    prior did.
     \item \textbf{Baselines.} The strongest purely data-driven baselines (light
     Transformer $0.0345$, LSTM and GRU $0.0359$) all trail the hybrid, and the
     LSTM fails on the atypical cell B0006 (per-cell RMSE $0.068$) exactly where
     a fleet BMS is most exposed. The light Transformer leads the single-cell
     cross-dataset transfer ($0.0859$); route~B degrades out of distribution
     ($0.2617$) because its cycle coordinate extrapolates far outside the
-    training range on the long-lived CALCE cell --- an honest negative result
-    whose mechanism is identified and addressable (coordinate saturation; the
+    training range on the long-lived CALCE cell. This negative result has an
+    identified mechanism and candidate fixes (coordinate saturation, or the
     zeroed-coordinate deployment path).
     \item \textbf{Interpretability.} The physics priors were fit to per-cell
     data (the double-exponential beats the logistic by AIC on every cell), and
@@ -71,18 +72,18 @@ than the interim report's claim that the hybrid always wins:
     than every baseline in the benchmark.
     \item \textbf{Negative results.} The homoscedastic uncertainty weighting did
     not improve on a well-chosen fixed weight, so the fixed weight is adopted
-    for the headline models; the Neural-ODE baseline failed to clear the
+    for the main benchmark models; the Neural-ODE baseline failed to clear the
     curve-fit floor; and the reduced-protocol data-volume and overfitting sweeps
-    were noise-dominated and are reported as inconclusive. Stating these plainly
-    bounds the claims the thesis does make.
+    were noise-dominated and are reported as inconclusive. Reporting these
+    outcomes explicitly defines the limits of the claims made.
 \end{itemize}
 
 In summary, the thesis shows that a lightweight recurrent model with a learnable
 physics regulariser is a practical route to deployable EV battery prognostics:
 it is the most accurate and most physically plausible model in a leak-free,
-symmetric benchmark, it is small enough for on-board inference, and its one
-identified weakness --- long-horizon extrapolation of the cycle coordinate
-across datasets --- is explained and has clear mitigations.
+symmetric benchmark, and it is small enough for on-board inference. Its main
+identified weakness, long-horizon extrapolation of the cycle coordinate across
+datasets, is explained and has clear mitigations.
 
 \section{Future Work}
 
@@ -95,10 +96,10 @@ work:
     in early epochs (letting the network establish empirical convergence before the
     physical constraint tightens) could recover route~A's accuracy on typical cells
     without its failure mode on atypical ones.
-    \item \textbf{On-board deployment validation.} The int8 sizes are $4\times$
-    quantisation estimates and the Cortex-M4 latency is an analytic MACs/clock
-    estimate. Producing a genuinely quantised export (ONNX or TFLite-Micro),
-    flashing it to a physical M4 board, and measuring wall-clock inference and
+    \item \textbf{On-board deployment validation.} The int8 sizes are measured
+    from serialised quantised models, but the Cortex-M4 latency remains an
+    analytic MACs/clock estimate. Flashing the quantised export (ONNX or
+    TFLite-Micro) to a physical M4 board and measuring wall-clock inference and
     energy per window would close the deployment loop.
     \item \textbf{Broader chemistries and operating conditions.} Both datasets are
     LCO; validating on LFP/NMC cells and on field-collected partial-cycle data would
