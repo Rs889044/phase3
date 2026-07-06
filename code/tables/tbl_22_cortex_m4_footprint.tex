@@ -1,0 +1,14 @@
+\begin{table}
+\caption{Cortex-M4 deployment footprint: flash, RAM, and analytic latency.}
+\label{tab:cortex_m4_footprint}
+\begin{tabular}{lrrrrrrrrr}
+\toprule
+model & params & fp32\_kb & int8\_kb & macs & act\_ram\_kb & est\_m4\_latency\_ms & fits\_flash & fits\_ram & soh\_rmse(B0018) \\
+\midrule
+hybrid\_B\_small & 11009 & 46.8000 & 20.2000 & 101328 & 1.2500 & 1.2670 & True & True & 0.0170 \\
+gru\_small & 4161 & 18.6000 & 9.2000 & 39392 & 1.2500 & 0.4920 & True & True & 0.0284 \\
+transformer\_light & 17441 & 90.4000 & 70.0000 & 84832 & 2.5000 & 1.0600 & True & True & 0.0182 \\
+transformer\_heavy & 225409 & 932.1000 & 611.1000 & 1114656 & 7.5000 & 13.9330 & True & True & 0.0295 \\
+\bottomrule
+\end{tabular}
+\end{table}

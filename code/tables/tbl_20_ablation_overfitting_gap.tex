@@ -1,0 +1,13 @@
+\begin{table}
+\caption{Generalisation (overfitting) gap at full data: test minus train SOH RMSE, per model.}
+\label{tab:ablation_overfitting_gap}
+\begin{tabular}{lrrrr}
+\toprule
+model & params & train\_rmse & test\_rmse & gap \\
+\midrule
+Transformer (light) & 17441 & 0.0419 & 0.0357 & -0.0062 \\
+Transformer (heavy) & 225409 & 0.0393 & 0.0384 & -0.0009 \\
+Hybrid (route A) & 41473 & 0.0316 & 0.0381 & 0.0065 \\
+\bottomrule
+\end{tabular}
+\end{table}

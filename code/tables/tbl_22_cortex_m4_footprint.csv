@@ -1,0 +1,5 @@
+,model,params,fp32_kb,int8_kb,macs,act_ram_kb,est_m4_latency_ms,fits_flash,fits_ram,soh_rmse(B0018)
+0,hybrid_B_small,11009,46.8,20.2,101328,1.25,1.267,True,True,0.017
+1,gru_small,4161,18.6,9.2,39392,1.25,0.492,True,True,0.0284
+2,transformer_light,17441,90.4,70.0,84832,2.5,1.06,True,True,0.0182
+3,transformer_heavy,225409,932.1,611.1,1114656,7.5,13.933,True,True,0.0295

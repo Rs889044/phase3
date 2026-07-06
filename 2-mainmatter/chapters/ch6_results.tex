@@ -20,6 +20,14 @@ Chapter~\ref{ch:datasets_implementation} (Section~\ref{sec:evaluation_strategy})
     on the remaining two cells. Each fold is repeated over \textbf{3 random
     seeds}. Scalers and physics priors are fit on the \emph{training cells only}
     to prevent leakage.
+    \item \textbf{Symmetric time input:} every learned model receives the same
+    fixed-scale normalized cycle coordinate ($\mathrm{cycle}/500$) as an extra
+    input channel. A BMS knows the elapsed cycle count online, and the fixed
+    scale carries no information about a trajectory's total recorded length, so
+    this input is leak-free and no model is privileged with time information.
+    (An earlier draft normalized this coordinate per trajectory, which leaked
+    the recorded life of the test cell; the flaw was identified and corrected,
+    and every number in this chapter uses the corrected protocol.)
     \item \textbf{Cross-dataset generalization:} train on the full NASA set,
     evaluate zero-shot on CALCE CS2\_35. As established in
     Chapter~\ref{ch:datasets_implementation}, both datasets are LiCoO$_2$
@@ -37,13 +45,13 @@ Seven learned architectures are compared: \textbf{two Transformers} --- a
 \emph{light}, edge-sized model (17k parameters, hyperparameter-tuned like every
 other baseline) and a \emph{heavy}, high-capacity model (225k parameters, an
 accuracy reference at the parameter scale of the attention models reported in
-the literature) --- an LSTM, a vanilla GRU, a continuous-time PIML baseline (Neural-ODE),
-and the proposed hybrid in its two physics variants: \textbf{route~A} (fixed
-closed-form Verhulst/double-exponential prior used as a soft penalty) and
-\textbf{route~B} (a \emph{learnable} ODE-residual whose parameters are trained
-jointly with the network). They are measured against the two non-learned
-reference floors of Chapter~\ref{ch:datasets_implementation}: the empirical
-double-exponential curve fit and a non-recurrent SVR.
+the literature) --- an LSTM, a vanilla GRU, a continuous-time baseline
+(Neural-ODE), and the proposed hybrid in its two physics variants:
+\textbf{route~A} (fixed closed-form Verhulst/double-exponential prior used as a
+soft penalty) and \textbf{route~B} (a \emph{learnable} ODE-residual whose
+parameters are trained jointly with the network). They are measured against the
+two non-learned reference floors of Chapter~\ref{ch:datasets_implementation}:
+the empirical double-exponential curve fit and a non-recurrent SVR.
 
 \section{Physics Fits and Interpretability}
 \label{sec:physics_interpretability}
@@ -113,15 +121,15 @@ finding of Section~\ref{sec:central_finding}.
 
 Route~B, in contrast, does not use a fixed curve: it learns its Verhulst
 parameters during training. On the held-out folds it converged to
-$r\approx-0.80$ and a carrying capacity $K\approx0.93$ (both expressed in the
-normalized life coordinate $t\in[0,1]$, so $r$ is a rate per fraction of
-recorded life rather than per cycle, and its physical interpretation is
-correspondingly coarser). With a negative rate
-constant the logistic law becomes a decay law: for $\mathrm{SOH} < K$ the
-learned dynamics give $d\mathrm{SOH}/dt<0$, i.e.\ a monotone fade whose rate
-adapts to the training distribution instead of following a fixed shape.
-These two learned scalars can be inspected directly, so the interpretability
-benefit of the physics prior is retained even though its parameters are learned.
+$r\approx-0.87$ and a carrying capacity $K\approx0.91$ (both expressed in the
+fixed-scale cycle coordinate, so $r$ is a rate per 500 cycles rather than per
+cycle, and its physical interpretation is correspondingly coarser). With a
+negative rate constant the logistic law becomes a decay law: for
+$\mathrm{SOH} < K$ the learned dynamics give $d\mathrm{SOH}/dt<0$, i.e.\ a
+monotone fade whose rate adapts to the training distribution instead of
+following a fixed shape. These two learned scalars can be inspected directly, so
+the interpretability benefit of the physics prior is retained even though its
+parameters are learned.
 
 \section{Main Benchmark (NASA Leave-One-Cell-Out)}
 \label{sec:main_benchmark}
@@ -131,15 +139,14 @@ summarise the headline comparison across all folds and seeds.
 
 \begin{table}[H]
 \centering
-\caption{Model benchmark on NASA leave-one-cell-out (real measured values; SOH
+\caption{Model benchmark on NASA leave-one-cell-out (measured values; SOH
 RMSE as mean $\pm$ 95\% CI). ``Phys.Cons.'' is the fraction of predictions
 respecting $d\mathrm{SOH}/dt\le0$; ``Cross'' is the zero-shot NASA$\rightarrow$CALCE RMSE.
 The first two rows are the non-learned reference floors of
-Chapter~\ref{ch:datasets_implementation} (Table~\ref{tab:benchmarks}): the
-empirical double-exponential curve fit (fit on the training cells, evaluated on
-the held-out cell) and a non-recurrent SVR on the same windows. The two hybrids
-use a deliberately generous hidden size for this comparison; the matched-size
-(11k-parameter) deployment model reproduces the route-B accuracy
+Chapter~\ref{ch:datasets_implementation} (Table~\ref{tab:benchmarks}). All
+learned models receive the same fixed-scale cycle input. The two hybrids use a
+deliberately generous hidden size for this comparison; the matched-size
+(11k-parameter) deployment model is evaluated separately
 (Section~\ref{sec:footprint}).}
 \label{tab:benchmark}
 \small
@@ -153,13 +160,13 @@ Double-exp fit     &        4 & $0.0449 \pm 0.0065$ & 0.0397 & 0.995          & 
 SVR                &  6{,}966 & $0.0495 \pm 0.0106$ & 0.0371 & 0.732          & 0.1566 \\
 \midrule
 \multicolumn{6}{l}{\emph{Learned models}}\\
-Transformer (light)  & 17{,}409  & $0.0395 \pm 0.0100$ & 0.0361 & 0.795 & \textbf{0.0627} \\
-Transformer (heavy) & 225{,}313 & $0.0428 \pm 0.0150$ & 0.0386 & 0.715 & 0.0817 \\
-LSTM               &  5{,}409 & $0.0331 \pm 0.0101$ & 0.0297 & 0.814          & 0.0864 \\
-GRU                &  4{,}065 & $0.0417 \pm 0.0106$ & 0.0374 & 0.776          & 0.1391 \\
-Neural-ODE         &  \textbf{1{,}233} & $0.0410 \pm 0.0170$ & 0.0362 & 0.712 & 0.1401 \\
-\textbf{Hybrid (route B)} & 41{,}473 & $\mathbf{0.0307 \pm 0.0057}$ & \textbf{0.0266} & \textbf{0.939} & 0.0802 \\
-Hybrid (route A)   & 41{,}281 & $0.0368 \pm 0.0087$ & 0.0328 & 0.893          & 0.0974 \\
+Transformer (light)  & 17{,}441  & $0.0345 \pm 0.0075$ & 0.0312 & 0.783 & \textbf{0.0859} \\
+Transformer (heavy) & 225{,}409 & $0.0418 \pm 0.0084$ & 0.0384 & 0.715 & 0.1018 \\
+LSTM               &  5{,}537 & $0.0359 \pm 0.0182$ & 0.0329 & 0.805          & 0.0993 \\
+GRU                &  4{,}161 & $0.0359 \pm 0.0088$ & 0.0324 & 0.772          & 0.1125 \\
+Neural-ODE         &  \textbf{1{,}249} & $0.0505 \pm 0.0196$ & 0.0450 & 0.686 & 0.0977 \\
+\textbf{Hybrid (route B)} & 41{,}473 & $\mathbf{0.0262 \pm 0.0029}$ & \textbf{0.0216} & \textbf{0.918} & 0.2617 \\
+Hybrid (route A)   & 41{,}473 & $0.0301 \pm 0.0059$ & 0.0258 & 0.903          & 0.0963 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -168,12 +175,9 @@ Hybrid (route A)   & 41{,}281 & $0.0368 \pm 0.0087$ & 0.0328 & 0.893          & 
     \centering
     \includegraphics[width=0.85\textwidth]{2-mainmatter/chapters/benchmark_rmse_bar.png}
     \caption{SOH RMSE on NASA leave-one-cell-out (mean $\pm$ 95\% CI; parameter
-    counts above the bars). The two leftmost bars are the non-learned floors
-    (double-exponential curve fit, SVR); every learned model beats them. The
-    route-B hybrid attains the lowest mean RMSE of all models, the LSTM is the
-    strongest purely data-driven baseline, and \emph{both} Transformers ---
-    including the 225k-parameter one --- trail the far smaller
-    recurrent models.}
+    counts above the bars). The route-B hybrid attains the lowest mean RMSE and
+    the narrowest confidence interval; the 13$\times$ larger heavy Transformer is
+    less accurate than the light one.}
     \label{fig:benchmark_rmse}
 \end{figure}
 
@@ -182,7 +186,7 @@ Hybrid (route A)   & 41{,}281 & $0.0368 \pm 0.0087$ & 0.0328 & 0.893          & 
     \includegraphics[width=0.85\textwidth]{2-mainmatter/chapters/phys_consistency_bar.png}
     \caption{Physical plausibility (fraction of predictions with
     $d\mathrm{SOH}/dt\le0$). The route-B hybrid is the most physically consistent
-    \emph{learned} model (0.939), well above all purely data-driven baselines. Two
+    \emph{learned} model (0.918), well above all purely data-driven baselines. Two
     reference points bound the metric: the double-exponential curve fit scores
     0.995 only trivially (a fitted closed-form curve is monotone by construction),
     and the ground-truth SOH itself scores 0.85--0.90 on the NASA cells because of
@@ -195,96 +199,96 @@ Hybrid (route A)   & 41{,}281 & $0.0368 \pm 0.0087$ & 0.0328 & 0.893          & 
 Several observations follow from Table~\ref{tab:benchmark}:
 
 \begin{itemize}
-    \item \textbf{Every learned model clears the empirical floor.} The pure
-    double-exponential curve fit, the physical-floor baseline defined in
-    Chapter~\ref{ch:datasets_implementation}, reaches only $0.0449$ RMSE on
-    held-out cells, and the non-recurrent SVR $0.0495$. All learned models beat
-    both floors (the heavy Transformer only barely clears the curve fit), so the
-    learned models add value beyond curve fitting. The curve fit also transfers
-    poorly: applied zero-shot to the $878$-cycle CALCE cell, its error rises to
-    $0.67$. Its near-perfect physical consistency ($0.995$) carries little
-    information, since a fitted closed-form curve is monotone by construction,
-    which is also why it cannot track genuine regeneration.
     \item \textbf{The route-B hybrid is the most accurate model} on unseen NASA
-    cells (RMSE $0.0307$), ahead of the LSTM ($0.0331$), the strongest purely
-    data-driven baseline; their confidence intervals overlap, so the two are
-    statistically tied on accuracy. It is also the most physically consistent
-    learned model by a clear margin ($0.939$ vs.\ $0.814$ for the LSTM).
-    \item \textbf{Neither Transformer leads on accuracy.} The edge-sized light
-    Transformer reaches $0.0395$, and the 13$\times$ larger heavy model is
-    worse, at $0.0428$, with the widest confidence interval of any learned
-    model. In this small-data setting, additional attention capacity does not
-    improve accuracy; Section~\ref{sec:transformer_gap} examines why.
-    \item \textbf{Cross-dataset transfer.} The light Transformer attains the
-    best zero-shot NASA$\rightarrow$CALCE RMSE ($0.0627$), followed by the
-    route-B hybrid ($0.0802$), the heavy Transformer ($0.0817$) and the LSTM
-    ($0.0864$); the plain GRU and Neural-ODE degrade to $\approx0.14$. Because
-    only one CALCE test cell is available, these numbers are indicative only
-    (Section~\ref{sec:transformer_gap}).
-    \item \textbf{Route~A (fixed prior) is the weakest hybrid} ($0.0368$). The
-    next section explains why.
+    cells (RMSE $0.0262 \pm 0.0029$), with the narrowest confidence interval of
+    any model, ahead of the light Transformer ($0.0345$) and the LSTM/GRU
+    ($0.0359$). It is also the most physically consistent learned model
+    ($0.918$ vs.\ $0.805$ for the LSTM).
+    \item \textbf{Most learned models clear the empirical floors; one does not.}
+    The double-exponential curve fit reaches $0.0449$ and the SVR $0.0495$ on
+    held-out cells. All recurrent, attention and hybrid models beat both floors.
+    The Neural-ODE ($0.0505$) does \emph{not}: encoding only the final window
+    step and integrating a learned latent field is too weak for this task, and
+    this is reported plainly rather than hidden. The curve fit also transfers
+    poorly (Cross RMSE $0.67$ on the 878-cycle CALCE cell), and its near-perfect
+    physical consistency ($0.995$) carries little information, since a fitted
+    closed-form curve is monotone by construction.
+    \item \textbf{Attention capacity does not pay at this data scale.} The
+    edge-sized light Transformer reaches $0.0345$, and the 13$\times$ larger
+    heavy model is worse, at $0.0418$. Section~\ref{sec:transformer_gap}
+    quantifies the comparison against the hybrid.
+    \item \textbf{The LSTM's mean hides a failure mode.} Its wide interval
+    ($\pm0.0182$) is driven by the atypical cell B0006, where its per-cell RMSE
+    degrades to $0.068$ (Table~\ref{tab:perfold}) --- the same atypical-cell
+    weakness the fixed prior shows, discussed next.
+    \item \textbf{Cross-dataset transfer is led by the light Transformer}
+    ($0.0859$), with route~A ($0.0963$), Neural-ODE ($0.0977$), LSTM ($0.0993$)
+    and the heavy Transformer ($0.1018$) close behind. \textbf{Route~B degrades
+    to $0.2617$} out of distribution --- an honest negative result analysed in
+    Section~\ref{sec:transformer_gap}: its learned dynamics depend on the cycle
+    coordinate, which extrapolates far outside the training range on the
+    long-lived CALCE cell. Only one CALCE test cell is available, so all
+    cross-dataset numbers are indicative.
 \end{itemize}
 
 \section{The Central Finding: Learnable Physics (Route B) Outperforms the Fixed Prior}
 \label{sec:central_finding}
 
-The most important result of this thesis is a correction of the interim,
-single-fold view. On one development fold the fixed double-exponential prior
-(route~A) looked best; on the \emph{full} four-fold LOCO evaluation this does not
-hold. Table~\ref{tab:perfold} breaks the two hybrid routes --- and the strongest
-data-driven baseline, the LSTM --- down per test cell.
+The most important comparison in this thesis is between the two physics
+mechanisms, with the strongest purely data-driven baseline (the LSTM) alongside.
+Table~\ref{tab:perfold} breaks the result down per test cell.
 
 \begin{table}[H]
 \centering
 \caption{Per-cell SOH RMSE (mean over 3 seeds) under leave-one-cell-out. The
-fixed prior (route~A) and the purely data-driven LSTM are excellent on the
-typical cells (B0007, B0018) but degrade sharply on the atypical B0005/B0006;
-the learnable route~B is uniformly robust across all four.}
+learnable route~B is best or near-best on every cell; the fixed prior (route~A)
+trails it on the atypical cells; the purely data-driven LSTM fails on the
+atypical B0006.}
 \label{tab:perfold}
 \begin{tabularx}{0.85\textwidth}{@{} l *{4}{>{\centering\arraybackslash}X} @{}}
 \toprule
 \textbf{Test cell} & \textbf{B0005} & \textbf{B0006} & \textbf{B0007} & \textbf{B0018} \\
 \midrule
-Hybrid (route A) & 0.054 & 0.044 & 0.028 & 0.021 \\
-Hybrid (route B) & \textbf{0.035} & \textbf{0.037} & \textbf{0.025} & 0.027 \\
-LSTM             & 0.044 & 0.046 & \textbf{0.025} & \textbf{0.017} \\
+Hybrid (route A) & 0.037 & 0.036 & \textbf{0.023} & 0.025 \\
+Hybrid (route B) & \textbf{0.030} & \textbf{0.029} & 0.024 & \textbf{0.021} \\
+LSTM             & 0.032 & 0.068 & \textbf{0.021} & 0.023 \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-\textbf{Route~A (fixed closed-form prior) helps typical cells but hurts atypical
-ones.} It is strong on B0018 ($0.021$) but worst on B0005 ($0.054$) and B0006
-($0.044$). B0006 starts above rated capacity with the heaviest regeneration
-(Figure~\ref{fig:fit_b0006}); a prior fit on the other cells simply does not
-describe it, so the physics penalty drags predictions the wrong way. The LSTM
-shows the same failure pattern ($0.044$/$0.046$ on the atypical cells): both a
-rigid prior and a purely data-driven model struggle on cells that differ from the
-training population, which is where a fleet BMS is most exposed.
-Figure~\ref{fig:soh_b0005} shows this on B0005.
+Three observations follow. First, \textbf{route~B is best or within $0.003$ of
+best on every cell} ($0.021$--$0.030$), which is the uniformity a fleet BMS
+needs on cells it has never seen. Second, \textbf{route~A trails route~B
+consistently and most on the atypical cells} (B0005, B0006 --- the cells whose
+trajectories a prior fit on other cells does not describe;
+Figure~\ref{fig:fit_b0006}); after correcting a coordinate mismatch in the
+prior evaluation found during code review, route~A no longer fails
+catastrophically, but the learnable mechanism remains better everywhere except
+B0007. Third, \textbf{the purely data-driven LSTM fails exactly where the fixed
+prior struggles}: on B0006 (starts above rated capacity, heaviest regeneration)
+its error doubles to $0.068$. Both a rigid prior and pure data-driving are
+weakest on cells unlike the training population; the learnable physics residual
+is the only variant that stays uniform. Figure~\ref{fig:soh_b0005} shows the
+held-out predictions on B0005.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.85\textwidth]{2-mainmatter/chapters/soh_overlay_B0005.png}
-    \caption{SOH trajectory on the held-out cell B0005. Every model --- including
-    the fixed-prior route~A --- sits \emph{above} the measured curve, over-estimating
-    SOH as the real capacity fades faster than a prior fit on the other cells
-    predicts. This over-estimation is the route~A failure mode: a dangerous bias for
-    a BMS, since it makes the cell look healthier than it is.}
+    \caption{SOH trajectory on the held-out cell B0005. Models trained on the
+    other cells tend to over-estimate SOH as the real capacity fades faster than
+    the training population suggests; over-estimation is the dangerous direction
+    for a BMS, since it makes the cell look healthier than it is. The hybrid
+    stays closest to the measured curve.}
     \label{fig:soh_b0005}
 \end{figure}
 
-\textbf{Route~B (learnable ODE-residual) is consistent across all folds}
-($0.025$--$0.037$) and has the best physical consistency (0.939), because it
-learns its ODE parameters from each training set instead of importing a fixed and
-possibly mismatched curve. For a BMS that must generalise to unseen cells, this
-consistency matters more than peak accuracy on one favourable cell.
-
-\paragraph{Summary.} The lightweight physics-informed approach holds, but the
+\paragraph{Summary.} The lightweight physics-informed approach holds, and the
 physics mechanism matters: the learnable ODE-residual (route~B) should be
 preferred over the fixed closed-form prior (route~A). Route~B costs roughly
-$3\times$ more training time (Section~\ref{sec:ablations}) in exchange for
-consistency across cells and the best physical plausibility. Since training is
-performed offline, this is an acceptable trade for a safety-critical application.
+$2$--$3\times$ more training time (Section~\ref{sec:ablations}) in exchange for
+uniform accuracy across cells and the best physical plausibility. Since training
+is performed offline, this is an acceptable trade for a safety-critical
+application.
 
 \section{The Transformer Question: Heavy Attention Does Not Pay on Scarce Data}
 \label{sec:transformer_gap}
@@ -293,11 +297,10 @@ Chapters 1 and 2 motivated this work with the observation that attention models
 lead the literature on accuracy but are too heavy for standard BMS hardware, so a
 lightweight physics-informed model should aim to match their accuracy at a
 fraction of the footprint. The measured results support a stronger statement: at
-realistic data volumes, the heavy Transformer loses its accuracy advantage
-as well. Transformer results in the literature (e.g.\ SGEformer) are obtained on
+realistic data volumes, the high-capacity Transformer is not more accurate
+either. Transformer results in the literature (e.g.\ SGEformer) are obtained on
 large training corpora, whereas run-to-failure data at that scale is rarely
-available for a given cell design. This section quantifies the gap and examines
-its cause.
+available for a given cell design.
 
 \subsection{The Paired Gap}
 
@@ -321,31 +324,28 @@ level ($n=12$), with the paired Wilcoxon signed-rank test.}
 \toprule
 \textbf{Comparison} & \textbf{Mean} & \textbf{Transf.} & \textbf{Rel.\ gap} & \textbf{Folds won} & \textbf{Wilcoxon $p$} & \textbf{Sig.} \\
 \midrule
-Route A vs.\ Transf.\ (SOH RMSE) & 0.0368 & 0.0428 & $-14.2\%$ & 6/12 & 0.622 & no \\
-Route B vs.\ Transf.\ (SOH RMSE) & 0.0307 & 0.0428 & $\mathbf{-28.3\%}$ & 9/12 & 0.092 & no \\
-Route B vs.\ Transf.\ (Phys.\ cons.) & 0.939 & 0.715 & $+31.3\%$ & \textbf{12/12} & $\mathbf{4.9\!\times\!10^{-4}}$ & \textbf{yes} \\
+Route A vs.\ Transf.\ (SOH RMSE) & 0.0301 & 0.0418 & $-28.0\%$ & 10/12 & 0.012 & yes \\
+Route B vs.\ Transf.\ (SOH RMSE) & 0.0262 & 0.0418 & $\mathbf{-37.5\%}$ & 11/12 & 0.007 & yes \\
+Route B vs.\ Transf.\ (Phys.\ cons.) & 0.918 & 0.715 & $+28.5\%$ & \textbf{12/12} & $\mathbf{4.9\!\times\!10^{-4}}$ & yes \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 On the in-distribution leave-one-cell-out task the route-B hybrid has a lower
-mean SOH RMSE than the heavy Transformer ($-28.3\%$, winning 9 of 12 runs),
-but with only four cells the cross-cell variance is high and the difference is
-not statistically significant (Wilcoxon $p=0.092$). The physical-consistency
-difference is larger and more uniform: route~B is more physically consistent on
-all 12 runs, and on all 4 cells after averaging seeds (run-level
-$p\approx5\times10^{-4}$). A caution applies to both tests: the three seeds
-within a fold share the same test cell and are therefore correlated, so $n=12$
-overstates the number of independent observations. With the four cells as the
-independent unit, the smallest attainable two-sided Wilcoxon $p$ is $0.125$, so
-formal significance cannot be established from this dataset at all; the results
-are therefore stated descriptively --- the hybrid is more physically plausible
-on every cell, with a large mean accuracy advantage that four cells cannot
-confirm statistically. For a safety-critical BMS, the plausibility property is
-arguably the more important of the two. Figure~\ref{fig:differential} shows the per-cycle
-differential error on B0018: positive values mean the hybrid is closer to the
-ground truth, and the hybrid stays ahead over the second half of the cell's life
-as it approaches end-of-life.
+mean SOH RMSE than the heavy Transformer ($-37.5\%$, winning 11 of 12 runs,
+run-level $p=0.007$), and is more physically consistent on all 12 runs
+(run-level $p\approx5\times10^{-4}$). A statistical caution applies to both
+tests: the three seeds within a fold share the same test cell and are therefore
+correlated, so $n=12$ overstates the number of independent observations. With
+the four cells as the independent unit, the smallest attainable two-sided
+Wilcoxon $p$ is $0.125$, so formal significance cannot be established from this
+dataset; the defensible statement is descriptive --- \emph{the hybrid is more
+accurate and more physically plausible than the heavy Transformer on every cell
+(4/4 after seed-averaging) and on nearly every run}.
+Figure~\ref{fig:differential} shows the per-cycle differential error on B0018:
+positive values mean the hybrid is closer to the ground truth, and the hybrid
+stays ahead over the second half of the cell's life as it approaches
+end-of-life.
 
 \begin{figure}[H]
     \centering
@@ -356,87 +356,56 @@ as it approaches end-of-life.
     \label{fig:differential}
 \end{figure}
 
-\subsection{Why the Heavy Transformer Fails Here: Overfitting Under Scarcity}
+\subsection{Capacity, Scarcity and Overfitting}
 \label{sec:overfitting}
 
 Scaling the Transformer from 17k to 225k parameters (13$\times$) makes its
-held-out accuracy worse ($0.0395 \rightarrow 0.0428$) and widens its confidence
-interval, which indicates that the available data cannot constrain the
-additional capacity. Two stress tests examine this directly
-(Figure~\ref{fig:scarcity}).
-
-\begin{table}[H]
-\centering
-\caption{Data-scarcity stress test: test SOH RMSE as each training cell is
-subsampled to 10--100\% of its cycles (route-A hybrid used as the inexpensive
-hybrid representative). The physics-regularised hybrid is essentially flat across
-a 10$\times$ change in data volume; the heavy Transformer is at its \emph{worst}
-at full data, and the light Transformer is erratic throughout.}
-\label{tab:scarcity}
-\begin{tabular}{l c c c}
-\toprule
-\textbf{Training data} & \textbf{Hybrid (route A)} & \textbf{Transf.\ (heavy)} & \textbf{Transf.\ (light)} \\
-\midrule
-10\%  & \textbf{0.0342} & 0.0356 & 0.0400 \\
-25\%  & \textbf{0.0320} & 0.0354 & 0.0461 \\
-50\%  & 0.0332 & 0.0345 & \textbf{0.0318} \\
-75\%  & \textbf{0.0334} & 0.0339 & 0.0394 \\
-100\% & \textbf{0.0320} & 0.0466 & 0.0397 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table}[H]
-\centering
-\caption{Generalisation gap (test $-$ train RMSE) at full data. Scaling the
-Transformer 13$\times$ increases its gap by half again and yields the worst test
-error of the three; the hybrid's nominally larger gap is measured from a far
-lower train error and still ends at the best test RMSE.}
-\label{tab:overfit_gap}
-\begin{tabular}{l r c c c}
-\toprule
-\textbf{Model} & \textbf{Params} & \textbf{Train RMSE} & \textbf{Test RMSE} & \textbf{Gap} \\
-\midrule
-Transformer (light) & 17{,}409  & 0.0362 & 0.0397 & 0.0036 \\
-Transformer (heavy) & 225{,}313 & 0.0412 & 0.0466 & 0.0054 \\
-Hybrid (route A)    & 41{,}281  & \textbf{0.0256} & \textbf{0.0320} & 0.0064 \\
-\bottomrule
-\end{tabular}
-\end{table}
+held-out accuracy worse ($0.0345 \rightarrow 0.0418$) despite strong
+regularisation (dropout 0.3, weight decay, a longer schedule), which indicates
+that the available data cannot constrain the additional capacity. Two stress
+tests probe this further (Figure~\ref{fig:scarcity}): a data-volume sweep
+(10--100\% of the training cycles) and a train--test generalisation-gap
+comparison at full data. Both are run on a reduced protocol (2 folds $\times$
+2 seeds) and turn out to be \textbf{noise-dominated at this scale}: no model
+shows a clean monotonic trend across data fractions, and the gap estimates are
+small relative to their variability (the Transformers' gaps are near zero or
+negative on this run, the route-A hybrid's is $+0.007$). These sweeps are
+therefore reported as inconclusive rather than as evidence; the reliable,
+full-protocol evidence for the capacity conclusion is the main benchmark itself
+(13$\times$ more attention parameters produced a \emph{less} accurate, less
+physically consistent, worse-calibrated model), together with the footprint cost
+of that capacity (Section~\ref{sec:footprint}).
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1.0\textwidth]{2-mainmatter/chapters/scarcity_stress_test.png}
-    \caption{Data scarcity drives accuracy more than model size. (Left) test RMSE
-    vs.\ training-data fraction: the physics-regularised hybrid is flat, the heavy
-    Transformer degrades at full data. (Middle) train vs.\ test curves --- the gap
-    is the overfitting. (Right) in the extreme low-data regime (10\%), the hybrid
-    beats both Transformers despite the heavy one having 5$\times$ its
-    parameters.}
+    \caption{Data-volume stress test (2 folds $\times$ 2 seeds; indicative).
+    (Left) test RMSE vs.\ training-data fraction; (Middle) train vs.\ test
+    curves; (Right) parameters vs.\ accuracy in the low-data regime. At this
+    reduced protocol the sweeps are noise-dominated and no clean trend survives;
+    the capacity conclusion in the text rests on the full four-fold benchmark
+    instead.}
     \label{fig:scarcity}
 \end{figure}
 
-The conclusion is that on battery-prognostics data of this size, data scarcity
-matters more than model capacity. The Transformer accuracy reported in the
-literature does not carry over to the small-fleet regime, while the physics
-prior, by constraining the hypothesis space, contributes more than the
-additional $200$k attention parameters do. This does not contradict the reviewed
-literature; it limits its scope: large attention models justify their cost only
-when the training corpus is large.
+\subsection{Cross-Dataset Transfer and an Honest Negative Result}
+\label{sec:cross_dataset}
 
-\subsection{Cross-Dataset Nuance}
-
-The Transformer family is not beaten everywhere: on the zero-shot
-NASA$\rightarrow$CALCE transfer the \emph{light} Transformer has the lowest mean
-Cross RMSE ($0.0627$, Table~\ref{tab:benchmark}), with the route-B hybrid the best
-of the recurrent family ($0.0802$) ahead of the heavy Transformer ($0.0817$) and
-LSTM ($0.0864$), while the plain GRU and Neural-ODE degrade to $\approx0.14$.
-This result must be read cautiously: the cross-dataset protocol has only a
-\emph{single} CALCE test cell (CS2\_35), so each number is one cell over three
-seeds and the ranking among the leaders is not reliable. The dependable signal
-is that the physics-regularised hybrid remains competitive out of distribution
-while the plain recurrent baselines degrade, which is consistent with the
-regularisation interpretation above.
+On the zero-shot NASA$\rightarrow$CALCE transfer the light Transformer leads
+($0.0859$), with route~A, the Neural-ODE, the LSTM and the heavy Transformer
+between $0.096$ and $0.102$, and the plain GRU at $0.113$. \textbf{Route~B
+degrades to $0.2617$ --- the worst learned model out of distribution.} The
+mechanism is the cycle coordinate: CALCE CS2\_35 lives for 878 cycles, so the
+fixed-scale coordinate reaches $1.76$ at end-of-test, far outside the training
+range ($\le0.34$ on the NASA cells), and route~B's learned dynamics --- which
+depend on that coordinate through the ODE residual --- extrapolate poorly.
+(Under the earlier, leaked normalization every test trajectory was rescaled into
+$[0,1]$, which masked exactly this failure; the corrected protocol exposes it.)
+Two mitigations are identified for future work: saturating the coordinate at the
+training maximum, and running the deployed zeroed-coordinate path (which the
+footprint profiling already uses) for out-of-range cells. With only a single
+CALCE test cell, all cross-dataset rankings remain indicative; the in-distribution
+LOCO results are the load-bearing evidence of this thesis.
 
 \section{Prognostic (PHM) Assessment}
 \label{sec:phm}
@@ -460,25 +429,26 @@ indicates badly calibrated early-life horizons.}
 \midrule
 Double-exp fit        & 0.72 & 83.3 & 0.37 \\
 SVR                   & 0.72 & 82.8 & 0.48 \\
-Transformer (light)   & 0.62 & 73.9 & $-0.10$ \\
-Transformer (heavy)   & 0.64 & 83.5 & 0.02 \\
-LSTM                  & 0.63 & 79.3 & 0.18 \\
-GRU                   & 0.71 & 80.1 & 0.20 \\
-Neural-ODE            & 0.67 & 80.9 & 0.26 \\
-\textbf{Hybrid (route B)} & 0.70 & 80.1 & \textbf{0.30} \\
-Hybrid (route A)      & 0.59 & 73.3 & $-0.20$ \\
+Transformer (light)   & 0.62 & 77.8 & 0.11 \\
+Transformer (heavy)   & 0.57 & 77.4 & $-0.05$ \\
+LSTM                  & 0.65 & 81.8 & $-0.00$ \\
+GRU                   & 0.62 & 76.7 & $-0.04$ \\
+Neural-ODE            & 0.59 & 71.8 & $-0.37$ \\
+\textbf{Hybrid (route B)} & \textbf{0.71} & 80.7 & \textbf{0.38} \\
+Hybrid (route A)      & 0.59 & 76.7 & $-0.00$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 The route-B hybrid gives the best-calibrated horizons of any learned model
-(CRA $0.30$, $\alpha$-$\lambda$ $0.70$); both Transformers are poorly calibrated
-(CRA $-0.10$ and $0.02$), as is the fixed-prior route~A ($-0.20$). Early-life
-RUL is inherently uncertain, and the models that overfit (the Transformers) or
-rely on a mismatched prior (route~A) are penalised most in that region.
-Figure~\ref{fig:alpha_lambda} shows the $\alpha$-$\lambda$ RUL prognosis for the
-hybrid on B0018, and Figure~\ref{fig:soh_b0018} overlays the predicted SOH
-trajectories on the same cell.
+($\alpha$-$\lambda$ $0.71$, CRA $0.38$ --- the only learned model whose CRA is
+clearly positive), essentially matching the time-based curve fit on the PHM
+axes while far exceeding it on pointwise accuracy and transferability. Every
+purely data-driven model has near-zero or negative CRA: early-life RUL is
+inherently uncertain, and models without a usable degradation prior pay for it
+exactly there. Figure~\ref{fig:alpha_lambda} shows the $\alpha$-$\lambda$ RUL
+prognosis for the hybrid on B0018, and Figure~\ref{fig:soh_b0018} overlays the
+predicted SOH trajectories on the same cell.
 
 \begin{figure}[H]
     \centering
@@ -519,38 +489,36 @@ feature from the physics.}
 \toprule
 \textbf{Variant} & \textbf{SOH RMSE} & \textbf{Phys.Cons.} & \textbf{Train (s)} \\
 \midrule
-Physics OFF $+$ t-channel (control)    & \textbf{0.0239} & 0.902 & 4.87 \\
-Route B $\cdot$ ODE-residual (t $+$ physics) & 0.0253 & \textbf{0.933} & 4.09 \\
-Physics OFF (no t, no physics)         & 0.0304 & 0.896 & 1.52 \\
-Route A $\cdot$ double-exp             & 0.0315 & 0.903 & 2.01 \\
-Route A $\cdot$ uncertainty-wt         & 0.0332 & 0.895 & 1.24 \\
-Route A $\cdot$ logistic               & 0.0364 & 0.884 & 1.52 \\
+Route B $\cdot$ ODE-residual (t $+$ physics) & \textbf{0.0251} & \textbf{0.909} & 3.26 \\
+Physics OFF (no t, no physics)         & 0.0325 & 0.894 & 1.42 \\
+Route A $\cdot$ double-exp             & 0.0343 & 0.891 & 1.59 \\
+Physics OFF $+$ t-channel (control)    & 0.0367 & 0.903 & 3.07 \\
+Route A $\cdot$ uncertainty-wt         & 0.0384 & 0.887 & 1.68 \\
+Route A $\cdot$ logistic               & 0.0386 & 0.890 & 1.44 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 Four conclusions follow:
 \begin{enumerate}
-    \item \textbf{The de-confound control separates the two ingredients of
-    route~B.} Route~B's recurrent backbone takes the normalized cycle $t$ as an
-    extra input that the baselines lack, so a naive ``physics-off vs.\ route-B''
-    comparison would conflate the ODE loss with that feature. The control shows
-    that, on this quick 2-fold protocol, the $t$-channel supplies most of the raw
-    accuracy gain ($0.0304 \rightarrow 0.0239$), while the ODE residual on top is
-    accuracy-neutral within noise ($0.0253$) but gives the best physical
-    consistency of every variant ($0.933$ vs.\ $0.902$). The two roles are
-    therefore separable: the extra coordinate improves accuracy, and the physics
-    improves plausibility. On the full four-fold benchmark
-    (Table~\ref{tab:benchmark}) the combination is also the most accurate model
-    overall, and plausibility is the axis on which the hybrid's advantage is
-    statistically significant, so the physics term contributes where it is
-    claimed to.
-    \item \textbf{Route~B costs $\sim$3$\times$ the training time} of the
-    no-physics baseline ($4.1$\,s vs.\ $1.5$\,s on this protocol). This training
+    \item \textbf{The de-confound control credits the physics, not the input.}
+    Route~B's backbone takes the normalized cycle $t$ as an extra input, so a
+    naive ``physics-off vs.\ route-B'' comparison would conflate the ODE loss
+    with that feature. With the leak-free fixed-scale coordinate the control
+    settles this cleanly: adding the $t$-channel \emph{alone} does not help
+    (physics-off $0.0325 \rightarrow$ physics-off$+$t $0.0367$), while the ODE
+    residual on top of the same architecture improves both accuracy
+    ($0.0367 \rightarrow 0.0251$, also below the no-t baseline) and physical
+    consistency ($0.903 \rightarrow 0.909$, the best of every variant). Under
+    the earlier leaked normalization this control had pointed the other way
+    (the coordinate itself carried test-cell information); with the corrected
+    protocol the accuracy gain belongs to the physics term.
+    \item \textbf{Route~B costs $\sim$2--3$\times$ the training time} of the
+    no-physics baseline ($3.3$\,s vs.\ $1.4$\,s on this protocol). This training
     cost is paid offline; the deployed inference network is unchanged.
     \item \textbf{Uncertainty weighting did not have the impact we anticipated
     here.} On this small, clean problem the dynamic homoscedastic weighting did
-    not improve on a well-chosen fixed weight ($0.0332$ vs.\ $0.0315$ for the same
+    not improve on a well-chosen fixed weight ($0.0384$ vs.\ $0.0343$ for the same
     route-A backbone); the learned $\sigma$ tended to down-weight the data term
     more than was helpful. This refines the methodology of
     Chapter~\ref{ch:methodology}: the automatic weighting of Section~4.3 is a
@@ -558,16 +526,14 @@ Four conclusions follow:
     weight performs equally well (here slightly better), so the fixed weight is
     used for the headline models.
     \item \textbf{Within route~A the double-exponential prior beats the
-    logistic} ($0.0315$ vs.\ $0.0364$), consistent with the AIC verdict of
-    Table~\ref{tab:prior_fits} --- the two-timescale law is the better fixed
-    prior, though neither rescues route~A from its atypical-cell failure mode
-    (Section~\ref{sec:central_finding}).
+    logistic} ($0.0343$ vs.\ $0.0386$), consistent with the AIC verdict of
+    Table~\ref{tab:prior_fits}.
 \end{enumerate}
 
 \textbf{Aggregation ablation (feature richness).}
 Table~\ref{tab:aggregation} compares the full 8-feature per-cycle representation
-against a minimal 2-feature set. The richer representation buys a clear accuracy
-gain ($0.0383$ vs.\ $0.0442$, $\approx13\%$): the ICA/DVA and
+against a minimal 2-feature set. The richer representation gives a clear accuracy
+gain ($0.0371$ vs.\ $0.0420$, $\approx12\%$): the ICA/DVA and
 electrical-state features carry health information beyond a minimal
 capacity summary. We note this is a \emph{feature-count} surrogate for the
 per-second$\rightarrow$per-cycle trade-off rather than a literal comparison of
@@ -583,8 +549,8 @@ over 2 folds $\times$ 2 seeds).}
 \toprule
 \textbf{Feature set} & \textbf{SOH RMSE} & \textbf{Phys.Cons.} \\
 \midrule
-Full (8 features)    & \textbf{0.0383} & 0.892 \\
-Minimal (2 features) & 0.0442 & \textbf{0.907} \\
+Full (8 features)    & \textbf{0.0371} & 0.895 \\
+Minimal (2 features) & 0.0420 & \textbf{0.905} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -592,16 +558,13 @@ Minimal (2 features) & 0.0442 & \textbf{0.907} \\
 \textbf{Data-volume ablation.} Table~\ref{tab:datavolume} subsamples a stratified
 fraction (25\%/50\%/75\%/100\%) of \emph{each} training cell's cycles for the
 route-A hybrid (the inexpensive hybrid representative, as in the scarcity stress
-test). There is \emph{no} clean monotonic trend (the values sit in a
-narrow $0.027$--$0.035$ band and 100\% is, if anything, marginally worst): with
-only two folds $\times$ two seeds the comparison is noise-dominated. The reading
-is that on this small dataset the hybrid is not data-starved: more cycles of the
-same few cells do not reliably improve accuracy, and accuracy degrades only
-mildly at low data fractions. This agrees with the scarcity stress test of
-Section~\ref{sec:overfitting}, where the Transformers lack this stability. (An earlier version of this ablation kept the first $k\%$ of
-the concatenated windows, which for small fractions was the early life of a
-single cell; it has been corrected to a per-cell stratified subsample so every
-training cell remains represented.)
+test). The values sit in a $0.027$--$0.038$ band without a clean monotonic
+trend; with two folds $\times$ two seeds the comparison is noise-dominated, and
+the only cautious reading is that the hybrid does not collapse at low data
+fractions. (An earlier version of this ablation kept the first $k\%$ of the
+concatenated windows, which for small fractions was the early life of a single
+cell; it was corrected to a per-cell stratified subsample so every training cell
+remains represented.)
 
 \begin{table}[H]
 \centering
@@ -612,10 +575,10 @@ over 2 folds $\times$ 2 seeds).}
 \toprule
 \textbf{Training data} & \textbf{SOH RMSE} & \textbf{Phys.Cons.} \\
 \midrule
-25\%  & 0.0290 & \textbf{0.909} \\
-50\%  & \textbf{0.0270} & 0.909 \\
-75\%  & 0.0287 & 0.902 \\
-100\% & 0.0347 & 0.895 \\
+25\%  & 0.0375 & 0.891 \\
+50\%  & 0.0338 & 0.894 \\
+75\%  & 0.0369 & 0.892 \\
+100\% & \textbf{0.0268} & 0.894 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -627,17 +590,18 @@ A central claim of the thesis is that the framework is ``lightweight'' enough fo
 on-board BMS deployment. To make that claim on equal footing, a
 \textbf{matched-size} route-B hybrid (hidden $=32$, $\approx$11k parameters,
 comparable to the small GRU rather than the hidden-64 benchmark model) was
-profiled against the Cortex-M4 budget (RAM $<256$\,KB, flash $<1$\,MB, 80\,MHz).
-The footprint is reported in Table~\ref{tab:footprint}.
+quantised to int8 and profiled against the Cortex-M4 budget (RAM $<256$\,KB,
+flash $<1$\,MB, 80\,MHz). The footprint is reported in
+Table~\ref{tab:footprint}.
 
 \begin{table}[H]
 \centering
-\caption{Deployment footprint. Parameter counts, fp32 sizes, MACs and activation
-RAM are measured on the trained models (state-dict serialisation and forward
-hooks); the int8 column is the standard $4\times$ post-training-quantisation
-estimate of the fp32 weight size, and the Cortex-M4 latency is an analytic
-MACs/clock (CMSIS-NN-style) estimate. These supersede the placeholder estimates of
-the earlier report.}
+\caption{Deployment footprint. Parameter counts, fp32 sizes, MACs, activation
+RAM \emph{and int8 sizes} are measured on the trained models (int8 via PyTorch
+dynamic quantisation with the qnnpack engine; linear and recurrent layers are
+quantised, attention in-projections remain fp32, which is why the Transformers
+compress by less than $4\times$). The Cortex-M4 latency is an analytic
+MACs/clock (CMSIS-NN-style) estimate.}
 \label{tab:footprint}
 \small
 \setlength{\tabcolsep}{3pt}
@@ -645,10 +609,10 @@ the earlier report.}
 \toprule
 \textbf{Model} & \textbf{Params} & \textbf{fp32 (KB)} & \textbf{int8 (KB)} & \textbf{MACs} & \textbf{RAM (KB)} & \textbf{M4 lat.\ (ms)} & \textbf{Fits M4} \\
 \midrule
-Hybrid B (h=32) & 11{,}009 & 46.8 & \textbf{11.7} & 101{,}328 & \textbf{1.25} & 1.27 & yes \\
-GRU (small)     &  4{,}065 & 18.1 & 4.5  & 38{,}432 & 1.25 & 0.48 & yes \\
-Transformer (light) & 17{,}409 & 89.7 & 22.4 & 84{,}512 & 2.50 & 1.06 & yes \\
-Transformer (heavy) & 225{,}313 & 931.0 & 232.8 & 1{,}113{,}696 & 7.50 & 13.92 & int8 only \\
+Hybrid B (h=32) & 11{,}009 & 46.8 & \textbf{20.2} & 101{,}328 & \textbf{1.25} & 1.27 & yes \\
+GRU (small)     &  4{,}161 & 18.6 & 9.2  & 39{,}392 & 1.25 & 0.49 & yes \\
+Transformer (light) & 17{,}441 & 90.4 & 70.0 & 84{,}832 & 2.50 & 1.06 & yes \\
+Transformer (heavy) & 225{,}409 & 932.1 & 611.1 & 1{,}114{,}656 & 7.50 & 13.93 & int8 only \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -658,19 +622,27 @@ Transformer (heavy) & 225{,}313 & 931.0 & 232.8 & 1{,}113{,}696 & 7.50 & 13.92 &
     \includegraphics[width=1.0\textwidth]{2-mainmatter/chapters/footprint_comparison.png}
     \caption{Cortex-M4 footprint comparison: int8 flash (log scale, against the
     1\,MB budget), working RAM, and analytic latency at 80\,MHz. The deployable
-    route-B hybrid needs $1/20$ the flash and $1/11$ the latency of the high-capacity
-    Transformer, whose fp32 form (931\,KB) barely fits the flash budget at all.}
+    route-B hybrid needs $1/30$ the flash and $1/11$ the latency of the heavy
+    Transformer, whose fp32 form (932\,KB) barely fits the flash budget at all
+    and whose int8 form consumes 60\% of it.}
     \label{fig:footprint}
 \end{figure}
 
-The deployable hybrid occupies 11.7\,KB of flash (1.1\% of the M4 budget) and
-1.25\,KB of activation RAM. Compared with the heavy Transformer, it uses
-20$\times$ fewer parameters, 20$\times$ less flash (11.7 vs.\ 232.8\,KB int8) and
-6$\times$ less RAM, with 11$\times$ lower estimated latency (1.27 vs.\ 13.9\,ms),
-while being more accurate ($0.0305$ vs.\ $0.0428$ LOCO RMSE) and significantly
-more physically consistent. Against the edge-sized light Transformer it uses
-about half the flash and RAM, again with better accuracy and physical
-consistency. Figure~\ref{fig:frontier} summarises the trade-off.
+The deployable hybrid occupies 20.2\,KB of measured int8 flash (2.0\% of the M4
+budget) and 1.25\,KB of activation RAM. Evaluated on the same full four-fold
+leave-one-cell-out protocol, it scores SOH RMSE $0.0328 \pm 0.0102$ with
+physical consistency $0.893$: shrinking from 41k to 11k parameters costs some
+accuracy ($0.0262 \rightarrow 0.0328$), but the deployed model still leads every
+baseline in the benchmark --- it is more accurate than the heavy Transformer
+($0.0418$) with $20\times$ fewer parameters, $30\times$ less flash, $6\times$
+less RAM and $11\times$ lower estimated latency, and more accurate than the
+light Transformer ($0.0345$) at $3.5\times$ less flash with better physical
+consistency ($0.893$ vs.\ $0.783$). Figure~\ref{fig:frontier} summarises the
+trade-off. Two methodological notes bound this result: the M4 latency is
+analytic, not an on-board measurement, and the MAC counter instruments only the
+linear and recurrent layers, so the Transformers' attention matrix products
+($QK^\top$ and $AV$) are \emph{not} counted --- a bias in the Transformers'
+favour, which makes the hybrid's reported latency advantage conservative.
 
 \begin{figure}[H]
     \centering
@@ -678,23 +650,9 @@ consistency. Figure~\ref{fig:frontier} summarises the trade-off.
     \caption{The accuracy-vs-memory frontier. (Left) the deployed 11k-parameter
     hybrid occupies the favourable lower-left corner: more accurate than both
     Transformers at a fraction of the size. (Right) the deployed hybrid relative
-    to the heavy Transformer on every axis: 0.71$\times$ the error at
-    0.05$\times$ the parameters and flash and 0.09$\times$ the latency.}
+    to the heavy Transformer on every axis.}
     \label{fig:frontier}
 \end{figure}
-
-\textbf{Matched-size validation.} Shrinking the route-B hybrid from the 41k
-benchmark size to the deployable 11k costs essentially nothing: evaluated on the
-same full four-fold leave-one-cell-out protocol, the matched-size model scores
-SOH RMSE $0.0305\pm0.0085$ with physical consistency $0.924$ --- statistically
-identical to the $4\times$ larger model ($0.0307$) --- so the ``lightweight''
-claim holds at the size actually deployed. Two methodological notes bound this
-result. First, as stated in Chapter~\ref{ch:datasets_implementation}, the int8
-sizes are $4\times$ post-training-quantisation estimates and the M4 latency is
-analytic, not an on-board measurement. Second, the MAC counter instruments only
-the linear and recurrent layers, so the Transformers' attention matrix products
-($QK^\top$ and $AV$) are \emph{not} counted --- a bias in the Transformers'
-favour, which makes the hybrid's reported latency advantage conservative.
 
 \section{Implementation Caveats}
 \label{sec:caveats}
@@ -703,24 +661,19 @@ For completeness, four implementation details that bound the claims are recorded
 here rather than left implicit:
 
 \begin{itemize}
-    \item \textbf{Life-fraction input.} The route-B backbone receives a
-    normalized cycle coordinate whose test-time normalization uses the test
-    trajectory's own recorded length, information a BMS does not have online.
-    This bias is not negligible: the life fraction correlates with SOH at
-    $|r|\ge0.97$ on every NASA cell, and a polynomial regression on the life
-    fraction alone (no battery features) reaches LOCO RMSE $0.016$--$0.052$.
-    Because the purely data-driven baselines do not receive this input, the
-    accuracy ranking between route~B and those baselines in
-    Table~\ref{tab:benchmark} is partly confounded by it; the
-    physical-consistency comparison and the footprint results are unaffected.
-    The corrective protocol --- a fixed-scale cycle normalization (legitimately
-    available online, since a BMS knows the elapsed cycle count) supplied
-    identically to every model --- is the highest-priority follow-up, and the
-    profiled deployment path already runs with a zeroed coordinate.
-    \item \textbf{Quantisation and latency.} Int8 flash figures are $4\times$
-    post-training-quantisation estimates of measured fp32 sizes; the M4 latency
-    is analytic (and conservative toward the Transformers, whose attention
-    matrix products are excluded from the MAC count).
+    \item \textbf{Cycle-coordinate protocol.} An earlier draft normalized the
+    cycle coordinate per trajectory, which leaked each test cell's total
+    recorded life (the life fraction correlates with SOH at $|r|\ge0.97$). The
+    corrected protocol uses a fixed scale ($\mathrm{cycle}/500$) supplied
+    identically to every learned model; all results in this chapter use the
+    corrected protocol. The residual limitation is extrapolation: on
+    trajectories much longer than the training cells the coordinate leaves the
+    training range, which is the mechanism behind route~B's cross-dataset
+    degradation (Section~\ref{sec:cross_dataset}).
+    \item \textbf{Quantisation and latency.} Int8 sizes are measured (dynamic
+    quantisation, qnnpack engine); the M4 latency is analytic and conservative
+    toward the Transformers, whose attention matrix products are excluded from
+    the MAC count. On-board wall-clock measurement remains future work.
     \item \textbf{RUL persistence.} EOL \emph{labels} use the 5-cycle persistence
     rule of Chapter~\ref{ch:datasets_implementation}; the RUL curves derived
     from \emph{predicted} SOH trajectories at evaluation time use a 3-cycle
@@ -739,36 +692,41 @@ here rather than left implicit:
 The measured evaluation supports the following conclusions:
 
 \begin{itemize}
-    \item \textbf{Learnable physics (route~B).} The learnable ODE-residual
-    performs best overall: it has the lowest mean SOH RMSE of all models
-    ($0.0307$), consistent accuracy on every unseen cell ($0.025$--$0.037$), and
-    the highest physical consistency ($0.939$; higher than the heavy Transformer
-    on all 4 cells and all 12 runs, reported descriptively since four independent
-    cells cannot support formal significance). Its accuracy advantage over the
-    Transformer ($-28.3\%$) is large in mean but not statistically confirmable
-    ($p=0.092$ at the run level, four cells). The fixed closed-form prior (route~A) can
-    degrade accuracy on atypical cells and is not recommended.
+    \item \textbf{Learnable physics (route~B).} Under the leak-free, symmetric
+    protocol the learnable ODE-residual is the most accurate model in the
+    benchmark ($0.0262 \pm 0.0029$, the narrowest confidence interval), best or
+    near-best on every unseen cell ($0.021$--$0.030$), the most physically
+    consistent learned model ($0.918$), and the only learned model with
+    clearly positive prognostic calibration (CRA $0.38$). The de-confound
+    ablation attributes the gain to the ODE residual itself, not to the extra
+    time input, which alone does not help.
     \item \textbf{Transformer comparison.} Attention models lead the literature
-    on accuracy when trained on large corpora. Under the data scarcity typical
-    of this application, the high-capacity model overfits (13$\times$ more
-    parameters made it worse), so the lightweight hybrid meets the original goal
-    of Transformer-class accuracy at a fraction of the footprint. Two caveats
-    apply: the LSTM is statistically tied with route~B in-distribution, and the
-    light Transformer leads the single-cell cross-dataset transfer.
-    \item \textbf{Negative results.} The homoscedastic uncertainty weighting did
-    not improve on a well-chosen fixed weight on this dataset, so the fixed
-    weight is used for the headline models. The ablation control likewise shows
-    that the physics term's distinctive contribution is physical plausibility,
-    with a neutral-to-positive effect on accuracy.
-    \item \textbf{Deployment.} The matched-size route-B hybrid requires
-    $11.7$\,KB of flash and $1.25$\,KB of RAM on the Cortex-M4 budget, $1/20$
-    the flash and $1/11$ the latency of the heavy Transformer, with better
-    accuracy, the best calibration among the learned models (CRA $0.30$), and no
-    accuracy loss from the size reduction.
+    on accuracy when trained on large corpora. At this data scale the
+    high-capacity model is less accurate than the light one ($0.0418$ vs.\
+    $0.0345$) and both trail the hybrid, which wins 11 of 12 runs against the
+    heavy Transformer ($-37.5\%$ mean RMSE) and all 12 on physical consistency
+    --- reported descriptively, since four independent cells cannot support
+    formal significance.
+    \item \textbf{Negative results, stated plainly.} The homoscedastic
+    uncertainty weighting did not improve on a well-chosen fixed weight; the
+    Neural-ODE baseline failed to clear the curve-fit floor; the data-volume and
+    overfitting sweeps were noise-dominated at their reduced protocol; and
+    route~B's cross-dataset transfer degrades ($0.2617$) because its cycle
+    coordinate extrapolates outside the training range on the long-lived CALCE
+    cell --- a failure the earlier leaked normalization had masked, with
+    mitigations identified for future work.
+    \item \textbf{Deployment.} The matched-size route-B hybrid requires a
+    measured $20.2$\,KB of int8 flash (2.0\% of the Cortex-M4 budget) and
+    $1.25$\,KB of RAM, and at that size ($0.0328$) it is still more accurate
+    than every baseline --- $20\times$ fewer parameters, $30\times$ less flash
+    and $11\times$ lower latency than the heavy Transformer, and $3.5\times$
+    less flash than the light one with better accuracy and consistency.
 \end{itemize}
 
 These outcomes replace the interim report's claim that the hybrid always wins
 with a more precise conclusion: a lightweight recurrent model with a learnable
 physics regulariser is the best-balanced choice for deployable battery
-prognostics, and at realistic data volumes a heavyweight attention model is
-neither small enough for the edge nor more accurate.
+prognostics in-distribution, a heavyweight attention model is neither small
+enough for the edge nor more accurate at realistic data volumes, and the
+framework's remaining weakness --- long-horizon extrapolation of the cycle
+coordinate across datasets --- is identified, explained, and addressable.

@@ -1,0 +1,4 @@
+,Model,Params,SOH RMSE,Phys. cons.,int8 flash [KB],act. RAM [KB],M4 latency [ms],Fits M4
+0,Transformer (light),17441,0.0345,0.783,70.0,2.5,1.06,yes
+1,Transformer (heavy),225409,0.0418,0.715,611.1,7.5,13.93,yes
+2,Hybrid route B (deployed),11009,0.0328,0.893,20.2,1.25,1.27,yes
