@@ -77,7 +77,7 @@ The core innovation of this framework lies in the composite loss function. Unlik
     \mathcal{L}_{data} = \frac{1}{N} \sum_{i=1}^{N} (y_i - \hat{y}_i)^2
 \end{equation}
 
-\textbf{Physics Loss ($\mathcal{L}_{phys}$):} We use Automatic Differentiation (Autograd) to compute the time derivative of the network's output ($\frac{d\hat{y}}{dt}$) with respect to the input time/cycle index. We then compare this computed derivative to the expected derivative derived from the ODE ($g(\hat{y}, \theta_{phys})$):
+\textbf{Physics Loss ($\mathcal{L}_{phys}$):} We use Automatic Differentiation (Autograd) to compute the time derivative of the network's output ($\frac{d\hat{y}}{dt}$) with respect to the input time/cycle index. Strictly, this is the \emph{partial} derivative of the network output with respect to its cycle-coordinate input, holding the other input features fixed; it serves as a tractable proxy for the trajectory derivative (the remaining features are not differentiable functions of the cycle index), which is standard practice in physics-informed training. We then compare this computed derivative to the expected derivative derived from the ODE ($g(\hat{y}, \theta_{phys})$):
 \begin{equation}
     \mathcal{L}_{phys} = \frac{1}{N} \sum_{i=1}^{N} \left| \frac{d\hat{y}}{dt} - g(\hat{y}, \theta_{phys}) \right|^2
 \end{equation}

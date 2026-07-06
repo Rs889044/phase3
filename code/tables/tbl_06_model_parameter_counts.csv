@@ -1,8 +1,8 @@
 ,model,params,route
-4,neural_ode,1233,none
-0,gru,4065,none
-1,lstm,5409,none
-2,transformer,17409,none
-5,hybrid,41281,A
+4,neural_ode,1249,none
+0,gru,4161,none
+1,lstm,5537,none
+2,transformer,17441,none
+5,hybrid,41473,A
 6,hybrid_B,41473,B
-3,transformer_heavy,225313,none
+3,transformer_heavy,225409,none

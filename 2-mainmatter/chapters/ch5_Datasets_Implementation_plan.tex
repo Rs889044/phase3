@@ -264,13 +264,13 @@ The predictive performance is quantified using standard regression metrics. For 
 \[
 \text{PCS} = \frac{1}{N} \sum_{i=1}^{N} \mathbb{I}\left(\frac{d\widehat{\text{SOH}}}{dt} \le 0\right) \times 100\%
 \]
-where $\mathbb{I}$ is the indicator function. A higher PCS indicates fewer physical violations (e.g., self-healing artifacts). In implementation, consecutive-cycle increases smaller than $10^{-3}$ SOH are counted as monotone, a numerical tolerance that absorbs floating-point noise without masking real violations.
+where $\mathbb{I}$ is the indicator function. A higher PCS indicates fewer physical violations (e.g., self-healing artifacts). In implementation, consecutive-cycle increases smaller than $10^{-3}$ SOH are counted as monotone, a numerical tolerance that absorbs floating-point noise without masking real violations. One reference point is essential for reading this metric: because the measured SOH itself contains genuine regeneration, a perfect predictor would \emph{not} score 100\% --- the ground-truth trajectories score PCS 0.847--0.904 on the four NASA cells. PCS is therefore a measure of trend plausibility rather than of accuracy, and a model scoring \emph{above} the ground-truth reference is smoothing through real regeneration transients. For BMS trend estimation this filtering may be acceptable or even desirable, but it is reported as a property, not as an unqualified improvement.
 
 \subsubsection{Statistical Reporting and Ablation}
 To ensure scientific rigor, the following protocols are used:
 \begin{itemize}
-    \item \textbf{Uncertainty Quantification:} Performance is reported as mean $\pm$ 95\% confidence intervals derived from 1000 bootstrap resamples.
-    \item \textbf{Hypothesis Testing:} Improvement over baselines is validated using the paired Wilcoxon signed-rank test ($p < 0.05$).
+    \item \textbf{Uncertainty Quantification:} Performance is reported as mean $\pm$ 95\% confidence intervals ($1.96\times$ the standard error over folds$\times$seeds).
+    \item \textbf{Hypothesis Testing:} Model comparisons use the paired Wilcoxon signed-rank test. Because seeds within a fold share the same test cell, and only four independent cells exist, test outcomes are reported descriptively (fold-level win counts) rather than as strict significance claims (Chapter~\ref{ch:results}).
     \item \textbf{Data Efficiency Study:} the hybrid is compared against the standard baselines on reduced training subsets (25\%, 50\%, 75\%, 100\% of training cycles) to quantify the regularization benefit in data-sparse regimes (results in Chapter~\ref{ch:results}, Section~\ref{sec:ablations}).
 \end{itemize}
 
@@ -294,7 +294,7 @@ To satisfy the requirement for rigorous evaluation, the following comparison mat
 
 \textbf{Data-Driven (Classical)} & Support Vector Regression (RBF) & \textbf{Non-Recurrent Control:} A strong shallow regressor on the same windowed features. Isolates the value of \emph{temporal} sequence modelling: if the recurrent networks do not beat it, sequence modelling adds no value on these features. \\
 
-\textbf{Data-Driven (Attention)} & Transformer --- \emph{light} ($\approx$17k params) and \emph{heavy} ($\approx$225k params) & \textbf{Complexity Benchmark:} Two attention scales. The \emph{light} model is edge-sized and hyperparameter-tuned like every baseline; the \emph{heavy} model is the SOTA-scale accuracy reference, testing whether pure data-driven ``brute force'' can outperform physics-guided learning in data-scarce scenarios. \\
+\textbf{Data-Driven (Attention)} & Transformer --- \emph{light} ($\approx$17k params) and \emph{heavy} ($\approx$225k params) & \textbf{Complexity Benchmark:} Two attention scales. The \emph{light} model is edge-sized and hyperparameter-tuned like every baseline; the \emph{heavy} model is a high-capacity accuracy reference at the parameter scale of published attention models, testing whether pure data-driven ``brute force'' can outperform physics-guided learning in data-scarce scenarios. \\
 
 \textbf{Physics-Informed (Alternative)} & Neural-ODE & \textbf{PIML Control:} A continuous-time physics-informed alternative (latent ODE dynamics). Ensures the proposed hybrid is compared against another physics-motivated architecture, not only black boxes. \\
 

@@ -30,17 +30,18 @@ than the interim report's claim that the hybrid always wins:
     performed best overall: it attains the lowest mean SOH RMSE of all
     benchmarked models ($0.0307$), consistent accuracy on every unseen cell
     (per-cell RMSE $0.025$--$0.037$), and the highest physical consistency of any
-    learned model ($0.939$), significantly higher than the SOTA-scale Transformer
-    on all 12 folds ($p\approx5\times10^{-4}$). Its mean SOH RMSE is $28.3\%$
-    below that Transformer in-distribution, although with only four cells the
-    accuracy gap is not statistically significant ($p=0.092$). The fixed
+    learned model ($0.939$, higher than the heavy Transformer on all 4 cells and
+    all 12 runs; with only four independent cells this dominance is reported
+    descriptively rather than as a formal significance claim). Its mean SOH RMSE
+    is $28.3\%$ below that Transformer in-distribution, although the accuracy gap
+    is likewise not statistically confirmable with four cells ($p=0.092$). The fixed
     closed-form prior (route~A), in contrast, helps typical cells but degrades
     atypical ones: a prior fit on other cells cannot describe a cell such as
     B0006, which begins above rated capacity with heavy regeneration.
     \item \textbf{Transformer comparison.} The thesis started from the position
     that attention models lead on accuracy but are too heavy for standard BMS
     hardware. The measurements support a stronger claim: under the data scarcity
-    typical of this application, scaling the Transformer to SOTA size (225k
+    typical of this application, scaling the Transformer to a high-capacity size (225k
     parameters, 13$\times$ the edge-sized variant) made it less accurate, a
     result the scarcity and generalisation-gap stress tests attribute to
     overfitting, while the physics-regularised hybrid's accuracy was stable from
@@ -62,7 +63,7 @@ than the interim report's claim that the hybrid always wins:
     $=32$, $\approx$11k parameters) comes to 11.7~KB of int8 flash ($4\times$
     post-training-quantisation estimate of the measured fp32 size) with 1.25~KB
     of measured activation RAM: $1/20$ the flash and $1/11$ the latency of the
-    SOTA-scale Transformer, while being more accurate ($0.0305$ vs.\ $0.0428$)
+    heavy Transformer, while being more accurate ($0.0305$ vs.\ $0.0428$)
     and retaining the full-size model's leave-one-cell-out accuracy. It uses
     1.1\% of the Cortex-M4 flash budget ($<$256~KB RAM, $<$1~MB flash).
     \item \textbf{Negative results.} The homoscedastic uncertainty weighting did
@@ -100,10 +101,16 @@ work:
     test the framework beyond the cross-load/cross-form-factor transfer studied
     here.
     \item \textbf{More cells for statistical power.} With four NASA cells the
-    hybrid's large mean accuracy edge over the SOTA Transformer ($-28.3\%$) falls
+    hybrid's large mean accuracy edge over the heavy Transformer ($-28.3\%$) falls
     short of significance; evaluating on larger fleets (e.g.\ the Toyota/MIT
     dataset) would settle the accuracy question and re-test the uncertainty
     weighting where it is expected to matter.
+    \item \textbf{Broader PIML baselines.} The present study compares against one
+    physics-informed alternative (a continuous-time Neural-ODE). Extending the
+    comparison to further PIML families under the same hardware constraint ---
+    e.g.\ a closed-form-solution PINN head, a physics-guided feature model, or a
+    reduced-order electrochemical surrogate --- would strengthen the positioning
+    of the proposed hybrid within the PIML design space.
     \item \textbf{Per-cell online adaptation.} Because route~B learns its ODE
     parameters, a lightweight online update of those parameters during deployment
     could let a single shipped model specialise to the cell it is actually

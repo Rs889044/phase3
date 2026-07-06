@@ -1,0 +1,19 @@
+Report Feedback: The report is Ok. The figures must be improved. Some more explanation of ODE solving techniques, GRU and motivation for other pre-processing methods should be provided. 
+Affiliation of mentor is missing in certificate page.
+ 
+ 
+Presentation Feedback: The presentation is fine. Mostly it was made by AI. 
+ 
+Overall Feedback: The following comments should be considered. 
+1.The student should learn the fundamentals of the problems and methodology
+2. The student can completely avoid the ode based approach by integrating the logistic model and the double-exponential model. 
+3. The student has to provide extensive baselines for Physics informed machine learning methods for intended applications (extreme hardware constraint). 
+4. The student has to provide standard prognosis curves for the example. 
+5. Quantify the accuracy loss compared to the transformer model; stating '85 to 90%' is insufficient.
+6. Revise Figure 6.3 to clearly illustrate the deviation in accuracy between models, potentially using a differential plot.
+7. Justify the aggregation of data points; articulate the trade-offs and potential benefits beyond simply addressing time series data requirements.'
+8. Thoroughly investigate and present the rationale for combining the warehouse and double exponential ODEs, addressing concerns about redundancy and potential for simpler solutions.
+9. Demonstrate a deeper understanding of Bayesian optimization and its applicability to the problem, particularly regarding the weighting of data and physical loss.
+10. Explore and compare physics-informed machine learning approaches as an alternative to the current hybrid model.
+11. Provide quantitative evidence of the memory footprint reduction achieved with the hybrid model compared to transformers, specifically in the context of target hardware (Cortex M4).
+12. Revisit the definition of 'ODE' and its application in the context of the work, ensuring a clear understanding of its role and benefits.
