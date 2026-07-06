@@ -2,7 +2,7 @@
 
 \section{The Global Context of Battery Prognostics}
 
-The transition from internal combustion engines (ICE) to electric propulsion represents one of the most significant industrial shifts of the 21st century. As nations strive to meet the ambitious climate goals outlined in the Paris Agreement and subsequent COP summits, the demand for high-performance, reliable energy storage systems has surged exponentially.
+The transition from internal combustion engines (ICE) to electric propulsion is one of the major industrial shifts of the 21st century. As nations work toward the climate goals of the Paris Agreement and subsequent COP summits, the demand for high-performance, reliable energy storage systems has grown rapidly.
 
 Lithium-ion (Li-ion) batteries have emerged as the dominant technology for this transition due to their high energy density, low self-discharge rates, and lack of memory effect compared to predecessors like Nickel-Metal Hydride (NiMH) or Lead-Acid batteries \cite{ref1_general}.
 
@@ -20,7 +20,7 @@ Inaccurate estimation of these parameters leads to two distinct failure modes in
 
 \textbf{Use-Case Clarification:} To make the engineering objective explicit: the proposed framework targets onboard Battery Management System (BMS) usage for passenger EVs and light commercial vehicles, as well as for fleet managers requiring robust SOH/RUL estimates for operational decisions (charging strategy, warranty, second-life planning). The model is designed to be trained offline (server/GPU) and deployed as a compact inference model on edge hardware. This separation—offline training, online lightweight inference—is core to the design decisions made in this thesis, specifically the choice of a GRU backbone and ODE regularizers. The practical benefits are safer charging protocols, improved range estimation, and reduced premature retirement of battery packs.
 
-Therefore, the development of robust, accurate, and computationally feasible prognostic algorithms is not just an academic exercise but a prerequisite for the sustainable scalability of the electric mobility sector.
+The development of accurate and computationally feasible prognostic algorithms is therefore a practical requirement for the large-scale adoption of electric mobility, not only an academic problem.
 
 \section{The Degradation Mechanism and Modeling Challenges}
 

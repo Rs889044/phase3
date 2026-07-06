@@ -139,13 +139,14 @@ alternate, and per-cycle capacity is taken from the discharge phase.
         \emph{exceeds} its 2.0~Ah rating at $t_0$.
         \item \textbf{Regeneration is retained in the target:} the localized
         capacity ``bumps'' (B0005 shows 36 such jumps) are \emph{not} smoothed
-        away --- models are trained and scored against the measured capacity, so
-        physical consistency must be earned against real regeneration, not
-        against a pre-sanitised label. Savitzky--Golay smoothing is used only
-        inside the ICA feature extraction and for visualisation.
+        away: models are trained and scored against the measured capacity, so
+        physical consistency is tested against real regeneration rather than a
+        pre-smoothed label. Savitzky--Golay smoothing is used only inside the
+        ICA feature extraction and for visualisation.
         \item \textbf{SOH:} $Q/Q_\text{rated}$ with $Q_\text{rated}=2.0$~Ah, giving
         initial SOH 92.8\% (B0005), 101.8\% (B0006), 94.6\% (B0007), 92.8\%
-        (B0018). The convention honestly allows $>$100\% at $t_0$.
+        (B0018). Under this convention, values above 100\% at $t_0$ are
+        retained rather than clipped.
     \end{itemize}
     \item \textbf{Engineered predictor features:} the shared eight-feature set
     (ICA peak voltage/magnitude/area, discharge time, $v_\text{min}$,
@@ -263,7 +264,7 @@ The predictive performance is quantified using standard regression metrics. For 
 \[
 \text{PCS} = \frac{1}{N} \sum_{i=1}^{N} \mathbb{I}\left(\frac{d\widehat{\text{SOH}}}{dt} \le 0\right) \times 100\%
 \]
-where $\mathbb{I}$ is the indicator function. A higher PCS indicates fewer physical violations (e.g., self-healing artifacts). In implementation, consecutive-cycle increases smaller than $10^{-3}$ SOH are counted as monotone --- a numerical tolerance that absorbs floating-point noise without masking genuine violations.
+where $\mathbb{I}$ is the indicator function. A higher PCS indicates fewer physical violations (e.g., self-healing artifacts). In implementation, consecutive-cycle increases smaller than $10^{-3}$ SOH are counted as monotone, a numerical tolerance that absorbs floating-point noise without masking real violations.
 
 \subsubsection{Statistical Reporting and Ablation}
 To ensure scientific rigor, the following protocols are used:
@@ -291,11 +292,11 @@ To satisfy the requirement for rigorous evaluation, the following comparison mat
 
 \textbf{Data-Driven (Recurrent)} & Vanilla LSTM / Standard GRU & \textbf{Sequential Control:} Establishes the performance of standard time-series architectures. Comparison isolates the benefit of adding physics-informed loss ($\lambda_{phys} > 0$). \\ 
 
-\textbf{Data-Driven (Classical)} & Support Vector Regression (RBF) & \textbf{Non-Recurrent Control:} A strong shallow regressor on the same windowed features. Isolates the value of \emph{temporal} sequence modelling --- if the recurrent nets do not beat it, the sequence machinery is not earning its place. \\
+\textbf{Data-Driven (Classical)} & Support Vector Regression (RBF) & \textbf{Non-Recurrent Control:} A strong shallow regressor on the same windowed features. Isolates the value of \emph{temporal} sequence modelling: if the recurrent networks do not beat it, sequence modelling adds no value on these features. \\
 
 \textbf{Data-Driven (Attention)} & Transformer --- \emph{light} ($\approx$17k params) and \emph{heavy} ($\approx$225k params) & \textbf{Complexity Benchmark:} Two attention scales. The \emph{light} model is edge-sized and hyperparameter-tuned like every baseline; the \emph{heavy} model is the SOTA-scale accuracy reference, testing whether pure data-driven ``brute force'' can outperform physics-guided learning in data-scarce scenarios. \\
 
-\textbf{Physics-Informed (Alternative)} & Neural-ODE & \textbf{PIML Control:} A genuine continuous-time physics-informed alternative (latent ODE dynamics). Ensures the proposed hybrid is compared against another physics-motivated architecture, not only black boxes. \\
+\textbf{Physics-Informed (Alternative)} & Neural-ODE & \textbf{PIML Control:} A continuous-time physics-informed alternative (latent ODE dynamics). Ensures the proposed hybrid is compared against another physics-motivated architecture, not only black boxes. \\
 
 \textbf{Hybrid (Proposed)} & \textbf{Hybrid PINN (Physics-Regularized)} & \textbf{The Solution:} Evaluated on RMSE, data efficiency (25\%--100\% volume), and the ability to maintain physical consistency during extrapolation. \\
 
