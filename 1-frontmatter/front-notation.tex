@@ -1,0 +1,31 @@
+% BATTERY / PHYSICS SYMBOLS
+\nomenclature{$SOH_k$}{State of Health at cycle $k$}
+\nomenclature{$RUL$}{Remaining Useful Life}
+\nomenclature{$Q_{max,k}$}{Maximum releasable capacity at cycle $k$}
+\nomenclature{$Q_{rated}$}{Nominal rated capacity of the battery}
+\nomenclature{$V$}{Battery Terminal Voltage}
+\nomenclature{$I$}{Battery Current}
+\nomenclature{$T$}{Temperature}
+\nomenclature{$dQ/dV$}{Incremental Capacity Analysis (ICA) curve}
+
+% ODE / DEGRADATION MODEL PARAMETERS
+\nomenclature{$r$}{Intrinsic rate constant of the Verhulst model (negative for decay; learnable in route B)}
+\nomenclature{$K$}{Carrying capacity (asymptotic plateau) of the Verhulst model; learnable in route B}
+\nomenclature{$a, b$}{Parameters for the fast decay process (Double-Exponential Model)}
+\nomenclature{$c, d$}{Parameters for the slow decay process (Double-Exponential Model)}
+\nomenclature{$t$}{Fixed-scale cycle coordinate supplied to all learned models (elapsed cycle/500)}
+
+% DEEP LEARNING / OPTIMIZATION SYMBOLS
+\nomenclature{$x_t$}{Input feature vector at time step $t$}
+\nomenclature{$h_t$}{Hidden state vector of the GRU}
+\nomenclature{$z_t$}{Update gate of the GRU}
+\nomenclature{$r_t$}{Reset gate of the GRU}
+\nomenclature{$\hat{y}$}{Predicted State of Health}
+\nomenclature{$\theta$}{Trainable parameters of the Neural Network}
+\nomenclature{$\theta_{phys}$}{Learnable parameters of the physics ODE (e.g., $r,K$ in route B)}
+\nomenclature{$\mathcal{L}_{total}$}{Composite Loss Function}
+\nomenclature{$\mathcal{L}_{data}$}{Data-fidelity loss term (MSE against measured SOH)}
+\nomenclature{$\mathcal{L}_{phys}$}{Physics loss term (ODE-residual or prior penalty)}
+\nomenclature{$\lambda_{phys}$}{Weighting factor for the physics loss term}
+\nomenclature{$\sigma_{data}$}{Aleatoric uncertainty (observation noise) for data}
+\nomenclature{$\sigma_{phys}$}{Aleatoric uncertainty for physics equation}

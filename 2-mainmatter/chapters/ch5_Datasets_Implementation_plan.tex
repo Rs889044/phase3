@@ -142,7 +142,7 @@ alternate, and per-cycle capacity is taken from the discharge phase.
         away: models are trained and scored against the measured capacity, so
         physical consistency is tested against real regeneration rather than a
         pre-smoothed label. Savitzky--Golay smoothing is used only inside the
-        ICA feature extraction and for visualisation.
+        ICA feature extraction and for visualization.
         \item \textbf{SOH:} $Q/Q_\text{rated}$ with $Q_\text{rated}=2.0$~Ah, giving
         initial SOH 92.8\% (B0005), 101.8\% (B0006), 94.6\% (B0007), 92.8\%
         (B0018). Under this convention, values above 100\% at $t_0$ are
@@ -223,7 +223,7 @@ Based on the data structures extracted during early implementation phases, the p
 \begin{enumerate}
     \item \textbf{Chronological Alignment:} Merging separated CALCE date files into a unified, continuous timeline.
     \item \textbf{Temporal Aggregation:} Downsampling high-frequency timeseries data (voltage, current, and temperature recorded per second) into single-cycle statistical summaries (mean, min, variance).
-    \item \textbf{Signal Smoothing:} Savitzky--Golay filtering applied to the charge-curve signals \emph{before} the $dQ/dV$ differentiation in the ICA feature extraction (and for trend visualisation). The SOH target itself is deliberately left raw --- see the note above --- so that reported errors reflect the measured degradation.
+    \item \textbf{Signal Smoothing:} Savitzky--Golay filtering applied to the charge-curve signals \emph{before} the $dQ/dV$ differentiation in the ICA feature extraction (and for trend visualization). The SOH target itself is deliberately left raw --- see the note above --- so that reported errors reflect the measured degradation.
     \item \textbf{Feature Scaling:} Bounding the features between 0.0 and 1.0 (MinMax scaling) or Standardizing them. This is absolutely critical for the convergence of neural networks and distance-based machine learning baselines.
 \end{enumerate}
 % --- NEW CONTENT ENDS HERE ---
@@ -297,7 +297,7 @@ To satisfy the requirement for rigorous evaluation, the following comparison mat
 
 \textbf{Data-Driven (Recurrent)} & Vanilla LSTM / Standard GRU & \textbf{Sequential Control:} Establishes the performance of standard time-series architectures. Comparison isolates the benefit of adding physics-informed loss ($\lambda_{phys} > 0$). \\ 
 
-\textbf{Data-Driven (Classical)} & Support Vector Regression (RBF) & \textbf{Non-Recurrent Control:} A strong shallow regressor on the same windowed features. Isolates the value of \emph{temporal} sequence modelling: if the recurrent networks do not beat it, sequence modelling adds no value on these features. \\
+\textbf{Data-Driven (Classical)} & Support Vector Regression (RBF) & \textbf{Non-Recurrent Control:} A strong shallow regressor on the same windowed features. Isolates the value of \emph{temporal} sequence modeling: if the recurrent networks do not beat it, sequence modeling adds no value on these features. \\
 
 \textbf{Data-Driven (Attention)} & Transformer --- \emph{light} ($\approx$17k params) and \emph{heavy} ($\approx$225k params) & \textbf{Complexity Benchmark:} Two attention scales. The \emph{light} model is edge-sized and hyperparameter-tuned like every baseline; the \emph{heavy} model is a high-capacity accuracy reference at the parameter scale of published attention models, testing whether pure data-driven ``brute force'' can outperform physics-guided learning in data-scarce scenarios. \\
 
@@ -315,7 +315,7 @@ Both non-learned floors --- the double-exponential curve fit and the SVR --- are
 quantified head-to-head with the neural models in Chapter~\ref{ch:results}
 (Table~\ref{tab:benchmark}); the learned models are required to beat them for the
 AI component to be justified.
-\noindent \textbf{Sufficiency of Data Volume:} While deep learning approaches typically require massive labeled datasets to generalize, \textbf{Physics-Informed models are hypothesised to be data-efficient}: the integration of physical equations constrains the optimization search space, guiding the model even when data is sparse. Rather than assume this, the thesis tests it directly --- via a data-volume ablation on the hybrid and a data-scarcity stress test pitting the hybrid against both Transformer scales at 10--100\% of the training cycles (Chapter~\ref{ch:results}, Sections~\ref{sec:overfitting} and~\ref{sec:ablations}). The combined cycle count of the NASA and CALCE datasets is sufficient for this hypothesis test precisely because the small-data regime is the regime of interest.
+\noindent \textbf{Sufficiency of Data Volume:} While deep learning approaches typically require massive labeled datasets to generalize, \textbf{Physics-Informed models are hypothesized to be data-efficient}: the integration of physical equations constrains the optimization search space, guiding the model even when data is sparse. Rather than assume this, the thesis tests it directly --- via a data-volume ablation on the hybrid and a data-scarcity stress test pitting the hybrid against both Transformer scales at 10--100\% of the training cycles (Chapter~\ref{ch:results}, Sections~\ref{sec:overfitting} and~\ref{sec:ablations}). The combined cycle count of the NASA and CALCE datasets is sufficient for this hypothesis test precisely because the small-data regime is the regime of interest.
 
 \section{Resource Feasibility}
 
@@ -329,7 +329,7 @@ For real-world BMS deployment, the deployable route-B hybrid is shrunk to a
 matched size (hidden $=32$, $\approx$11k parameters) and profiled against the
 Cortex-M4 budget. The profiling methodology is stated precisely so that measured
 and estimated quantities are never conflated: parameter counts, fp32 model size,
-int8 model size (PyTorch dynamic quantisation, qnnpack engine), per-inference
+int8 model size (PyTorch dynamic quantization, qnnpack engine), per-inference
 MACs, and peak activation RAM are \emph{measured} on the trained models; only
 the Cortex-M4 latency is an analytic MACs-per-clock (CMSIS-NN-style) estimate.
 The full footprint table for the hybrid, GRU and both Transformer scales is
@@ -339,7 +339,7 @@ reported in Chapter~\ref{ch:results}, Section~\ref{sec:footprint}.
 \begin{table}[H]
 \centering
 \caption{Deployment configuration for the lightweight hybrid (parameters, RAM and
-MACs measured; int8 size and latency are the clearly-labelled estimates described
+MACs measured; int8 size and latency are the clearly-labeled estimates described
 above). Full per-model figures appear in Table~\ref{tab:footprint}.}
 \label{tab:resource}
 \begin{tabularx}{\textwidth}{@{} l X @{}}
@@ -351,7 +351,7 @@ Quantized model (int8, flash, measured) & 20.2 KB \\
 Runtime activation RAM & 1.25 KB \\
 MACs per inference window & $\approx$ 101{,}000 \\
 Cortex-M4 latency @ 80 MHz (analytic estimate) & $\approx$ 1.27 ms per window \\
-Profiling method & PyTorch dynamic int8 quantisation (qnnpack), measured; analytic latency \\
+Profiling method & PyTorch dynamic int8 quantization (qnnpack), measured; analytic latency \\
 Training environment & single GPU or CPU (16 GB RAM) \\
 \bottomrule
 \end{tabularx}
@@ -360,7 +360,7 @@ Training environment & single GPU or CPU (16 GB RAM) \\
 \noindent \textbf{Quantification of Lightweight Architecture:}
 The deployable hybrid uses $\approx$11k trainable parameters, comparable to the
 small GRU baseline rather than the larger hidden-64 benchmark model, so the
-``lightweight'' claim is made on equal footing. After measured int8 quantisation
+``lightweight'' claim is made on equal footing. After measured int8 quantization
 it occupies \textbf{20.2~KB} of flash and \textbf{1.25~KB} of activation RAM ---
 about $3.5\times$ less flash than the light Transformer (70.0~KB / 2.5~KB) and
 $30\times$ less than the heavy one (611~KB).
@@ -369,18 +369,18 @@ $30\times$ less than the heavy one (611~KB).
 Deployment assumptions:
 \begin{itemize}
     \item \textbf{Quantization:} 8-bit post-training dynamic quantization
-    (PyTorch, qnnpack engine), with the quantised model serialised and its size
-    \emph{measured}. Linear and recurrent layers are quantised; attention
+    (PyTorch, qnnpack engine), with the quantized model serialized and its size
+    \emph{measured}. Linear and recurrent layers are quantized; attention
     in-projections remain fp32, which is why the Transformers compress by less
     than the ideal $4\times$.
     \item \textbf{Latency:} the Cortex-M4 latency is an analytic MACs/clock
-    (CMSIS-NN-style) estimate, clearly labelled as such rather than an on-board
-    measurement. On-board validation with a quantised export (ONNX or
+    (CMSIS-NN-style) estimate, clearly labeled as such rather than an on-board
+    measurement. On-board validation with a quantized export (ONNX or
     TFLite-Micro) is listed as future work.
 \end{itemize}
 
 \noindent
 All profiled models fit within standard automotive-MCU constraints
 ($<$256~KB RAM and $<$1~MB flash) --- the heavy Transformer only after
-quantisation, at 60\% of the flash budget, while the deployable hybrid uses
+quantization, at 60\% of the flash budget, while the deployable hybrid uses
 2\% --- confirming that the hybrid approach is feasible for edge deployment.

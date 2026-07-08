@@ -88,7 +88,7 @@ achieves a lower AIC than the logistic on \emph{every} cell ($\Delta\mathrm{AIC}
 from $-86$ to $-347$, always favouring double-exp), with a higher $R^2$ and a
 smaller residual spread on each cell (Figure~\ref{fig:redundancy}). This answers
 the redundancy question between the two priors: the two-timescale decay (fast SEI
-stabilisation plus slow active-material loss) describes the data better than the
+stabilization plus slow active-material loss) describes the data better than the
 single logistic S-curve, so the double-exponential is retained as the primary
 closed-form prior and the logistic as an alternative configuration.
 
@@ -135,7 +135,7 @@ parameters are learned.
 \label{sec:main_benchmark}
 
 Table~\ref{tab:benchmark} and Figures~\ref{fig:benchmark_rmse}--\ref{fig:phys_cons}
-summarise the main comparison across all folds and seeds.
+summarize the main comparison across all folds and seeds.
 
 \begin{table}[H]
 \centering
@@ -224,12 +224,27 @@ Several observations follow from Table~\ref{tab:benchmark}:
     \item \textbf{Cross-dataset transfer is led by the light Transformer}
     ($0.0859$), with route~A ($0.0963$), Neural-ODE ($0.0977$), LSTM ($0.0993$)
     and the heavy Transformer ($0.1018$) close behind. \textbf{Route~B degrades
-    to $0.2617$} out of distribution, a negative result analysed in
+    to $0.2617$} out of distribution, a negative result analyzed in
     Section~\ref{sec:transformer_gap}: its learned dynamics depend on the cycle
     coordinate, which extrapolates far outside the training range on the
     long-lived CALCE cell. Only one CALCE test cell is available, so all
     cross-dataset numbers are indicative.
 \end{itemize}
+
+\noindent
+\textbf{Effect of the shared time input on the baselines.} Supplying the cycle
+coordinate to every model is a design choice, and its cost is measurable. In the
+pre-correction run the baselines did not receive any time input (the leaked
+coordinate went only to the hybrids), so those numbers serve as a no-time-input
+reference under otherwise identical folds and seeds: the coordinate helped the
+GRU ($0.0417 \rightarrow 0.0359$) and the light Transformer
+($0.0395 \rightarrow 0.0345$), but hurt the LSTM
+($0.0331 \rightarrow 0.0359$) and the Neural-ODE
+($0.0410 \rightarrow 0.0505$) --- consistent with the design ablation, where the
+raw coordinate without a physics term does not reliably help
+(Section~\ref{sec:ablations}). The benchmark conclusion does not depend on this
+choice: route~B ($0.0262$) is ahead of the strongest baseline in either
+configuration, including the LSTM's no-time-input $0.0331$.
 
 \section{The Central Finding: Learnable Physics (Route B) Outperforms the Fixed Prior}
 \label{sec:central_finding}
@@ -316,13 +331,16 @@ pairs were not aligned to the same cycles.
 \begin{table}[H]
 \centering
 \caption{Hybrid vs.\ the heavy Transformer, paired at the \emph{fold}
-level ($n=12$), with the paired Wilcoxon signed-rank test.}
+level ($n=12$), with the paired Wilcoxon signed-rank test. The final column
+reports the \emph{run-level} test only; as discussed in the text, seeds within a
+fold are correlated and four independent cells cannot support formal
+significance, so these outcomes are read descriptively.}
 \label{tab:gap}
 \small
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{l c c c c c c}
 \toprule
-\textbf{Comparison} & \textbf{Mean} & \textbf{Transf.} & \textbf{Rel.\ gap} & \textbf{Folds won} & \textbf{Wilcoxon $p$} & \textbf{Sig.} \\
+\textbf{Comparison} & \textbf{Mean} & \textbf{Transf.} & \textbf{Rel.\ gap} & \textbf{Folds won} & \textbf{Wilcoxon $p$} & \textbf{Sig.\ (run)} \\
 \midrule
 Route A vs.\ Transf.\ (SOH RMSE) & 0.0301 & 0.0418 & $-28.0\%$ & 10/12 & 0.012 & yes \\
 Route B vs.\ Transf.\ (SOH RMSE) & 0.0262 & 0.0418 & $\mathbf{-37.5\%}$ & 11/12 & 0.007 & yes \\
@@ -361,10 +379,10 @@ end-of-life.
 
 Scaling the Transformer from 17k to 225k parameters (13$\times$) makes its
 held-out accuracy worse ($0.0345 \rightarrow 0.0418$) despite strong
-regularisation (dropout 0.3, weight decay, a longer schedule), which indicates
+regularization (dropout 0.3, weight decay, a longer schedule), which indicates
 that the available data cannot constrain the additional capacity. Two stress
 tests probe this further (Figure~\ref{fig:scarcity}): a data-volume sweep
-(10--100\% of the training cycles) and a train--test generalisation-gap
+(10--100\% of the training cycles) and a train--test generalization-gap
 comparison at full data. Both are run on a reduced protocol (2 folds $\times$
 2 seeds) and turn out to be \textbf{noise-dominated at this scale}: no model
 shows a clean monotonic trend across data fractions, and the gap estimates are
@@ -513,7 +531,9 @@ Four conclusions follow:
     consistency ($0.903 \rightarrow 0.909$, the best of every variant). Under
     the earlier leaked normalization this control had pointed the other way
     (the coordinate itself carried test-cell information); with the corrected
-    protocol the accuracy gain belongs to the physics term.
+    protocol the accuracy gain belongs to the physics term. Because this
+    decomposition supports a central claim of the thesis, confirming it on the
+    full four-fold, three-seed protocol is noted as a worthwhile follow-up.
     \item \textbf{Route~B costs $\sim$2--3$\times$ the training time} of the
     no-physics baseline ($3.3$\,s vs.\ $1.4$\,s on this protocol). This training
     cost is paid offline; the deployed inference network is unchanged.
@@ -591,7 +611,7 @@ A central claim of the thesis is that the framework is ``lightweight'' enough fo
 on-board BMS deployment. To make that claim on equal footing, a
 \textbf{matched-size} route-B hybrid (hidden $=32$, $\approx$11k parameters,
 comparable to the small GRU rather than the hidden-64 benchmark model) was
-quantised to int8 and profiled against the Cortex-M4 budget (RAM $<256$\,KB,
+quantized to int8 and profiled against the Cortex-M4 budget (RAM $<256$\,KB,
 flash $<1$\,MB, 80\,MHz). The footprint is reported in
 Table~\ref{tab:footprint}.
 
@@ -599,8 +619,8 @@ Table~\ref{tab:footprint}.
 \centering
 \caption{Deployment footprint. Parameter counts, fp32 sizes, MACs, activation
 RAM \emph{and int8 sizes} are measured on the trained models (int8 via PyTorch
-dynamic quantisation with the qnnpack engine; linear and recurrent layers are
-quantised, attention in-projections remain fp32, which is why the Transformers
+dynamic quantization with the qnnpack engine; linear and recurrent layers are
+quantized, attention in-projections remain fp32, which is why the Transformers
 compress by less than $4\times$). The Cortex-M4 latency is an analytic
 MACs/clock (CMSIS-NN-style) estimate.}
 \label{tab:footprint}
@@ -633,12 +653,13 @@ The deployable hybrid occupies 20.2\,KB of measured int8 flash (2.0\% of the M4
 budget) and 1.25\,KB of activation RAM. Evaluated on the same full four-fold
 leave-one-cell-out protocol, it scores SOH RMSE $0.0328 \pm 0.0102$ with
 physical consistency $0.893$: shrinking from 41k to 11k parameters costs some
-accuracy ($0.0262 \rightarrow 0.0328$), but the deployed model still leads every
-baseline in the benchmark --- it is more accurate than the heavy Transformer
-($0.0418$) with $20\times$ fewer parameters, $30\times$ less flash, $6\times$
-less RAM and $11\times$ lower estimated latency, and more accurate than the
-light Transformer ($0.0345$) at $3.5\times$ less flash with better physical
-consistency ($0.893$ vs.\ $0.783$). Figure~\ref{fig:frontier} summarises the
+accuracy ($0.0262 \rightarrow 0.0328$), but the deployed model remains
+nominally ahead of every baseline in the benchmark --- clearly more accurate
+than the heavy Transformer ($0.0418$) with $20\times$ fewer parameters,
+$30\times$ less flash, $6\times$ less RAM and $11\times$ lower estimated
+latency, and nominally ahead of the light Transformer ($0.0345$; the two
+confidence intervals overlap) at $3.5\times$ less flash with better physical
+consistency ($0.893$ vs.\ $0.783$). Figure~\ref{fig:frontier} summarizes the
 trade-off. Two methodological notes bound this result: the M4 latency is
 analytic, not an on-board measurement, and the MAC counter instruments only the
 linear and recurrent layers, so the Transformers' attention matrix products
@@ -672,8 +693,8 @@ here rather than left implicit:
     trajectories much longer than the training cells the coordinate leaves the
     training range, which is the mechanism behind route~B's cross-dataset
     degradation (Section~\ref{sec:cross_dataset}).
-    \item \textbf{Quantisation and latency.} Int8 sizes are measured (dynamic
-    quantisation, qnnpack engine); the M4 latency is analytic and conservative
+    \item \textbf{Quantization and latency.} Int8 sizes are measured (dynamic
+    quantization, qnnpack engine); the M4 latency is analytic and conservative
     toward the Transformers, whose attention matrix products are excluded from
     the MAC count. On-board wall-clock measurement remains future work.
     \item \textbf{RUL persistence.} EOL \emph{labels} use the 5-cycle persistence
@@ -727,7 +748,7 @@ The measured evaluation supports the following conclusions:
 
 These outcomes replace the interim report's claim that the hybrid always wins
 with a more precise conclusion: a lightweight recurrent model with a learnable
-physics regulariser is the best-balanced choice for deployable battery
+physics regularizer is the best-balanced choice for deployable battery
 prognostics in-distribution, and a heavyweight attention model is neither
 small enough for the edge nor more accurate at realistic data volumes. The
 framework's remaining weakness, long-horizon extrapolation of the cycle

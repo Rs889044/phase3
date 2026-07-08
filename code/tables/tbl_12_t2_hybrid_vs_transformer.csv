@@ -1,4 +1,0 @@
-,Comparison,Mean,Heavy Tf,Rel.gap%,Folds won,Wilcoxon p,Sig.
-0,Hybrid (route A) vs Transformer (heavy) (SOH RMSE),0.0301,0.0418,-28.0,10/12,0.012,yes
-1,Hybrid (route B) vs Transformer (heavy) (SOH RMSE),0.0262,0.0418,-37.5,11/12,0.007,yes
-2,Hybrid (route B) vs Transformer (heavy) (Phys. cons.),0.918,0.715,28.5,12/12,4.9e-04,yes

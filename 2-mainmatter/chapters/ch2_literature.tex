@@ -1,4 +1,5 @@
 \chapter{Literature Review}
+\label{ch:literature}
 
 The field of battery prognostics is rapidly evolving, characterized by a transition from empirical correlations to sophisticated AI-driven frameworks. This chapter reviews key contributions to the field, categorizing them into three dominant paradigms: Model-Based, Data-Driven, and Hybrid approaches. The review critically analyzes the strengths and limitations of each paradigm to contextualize the proposed hybrid framework and defend the methodological choices made for this thesis.
 
@@ -52,7 +53,7 @@ The current state-of-the-art in predictive accuracy involves Transformer models,
 
 \textbf{Limitations:} Despite their accuracy, Transformers have a quadratic memory complexity ($O(L^2)$) with respect to sequence length, making them difficult to deploy on resource-constrained hardware compared to the linear complexity ($O(L)$) of RNNs \cite{machine_learning_web}. Equally important, their reported accuracy is obtained on large training corpora: self-attention models require substantial data, and in low-data regimes their excess capacity leads to overfitting rather than higher accuracy. This matters for the BMS setting, where run-to-failure data for a given cell design is scarce; this thesis tests the point empirically by benchmarking two Transformer scales at realistic data volumes (Chapter~\ref{ch:results}). Furthermore, purely data-driven models like SGEformer are prone to overfitting to dataset artifacts, such as sensor noise masquerading as capacity regeneration, leading to physically implausible predictions (e.g., predicting infinite battery life in certain local minima).
 
-\textbf{Comparative Note:} For practical on-device feasibility, GRU-based hybrid solutions represent a favourable accuracy–cost frontier; Transformers yield strong accuracy but with an unfavorable compute/memory trade-off for on-device deployment.
+\textbf{Comparative Note:} For practical on-device feasibility, GRU-based hybrid solutions offer a favorable accuracy--cost trade-off; Transformers yield strong accuracy but at a compute and memory cost that is difficult to justify for on-device deployment.
 
 \section{Hybrid Physics-Informed Frameworks: The Convergence}
 

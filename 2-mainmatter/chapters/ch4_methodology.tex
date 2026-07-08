@@ -64,7 +64,7 @@ The choice of the Gated Recurrent Unit (GRU) is driven by the project's requirem
 
 This efficient architecture ($O(L)$ complexity) makes it superior to Transformers ($O(L^2)$ complexity) for resource-constrained BMS implementations \cite{ref1_general}.
 
-\textbf{Implementation Notes:} The GRU hidden size (32--64) and sequence length (8--15 cycles) were selected by Optuna Bayesian (TPE) hyperparameter optimisation. Parameter counts range from $\approx$4k (vanilla GRU) to $\approx$41k (the hidden-64 benchmark hybrid), with the deployed matched-size hybrid at $\approx$11k --- all well under a 1~MB footprint (see Chapter~\ref{ch:results}, Section~\ref{sec:footprint}).
+\textbf{Implementation Notes:} The GRU hidden size (32--64) and sequence length (8--15 cycles) were selected by Optuna Bayesian (TPE) hyperparameter optimization. Parameter counts range from $\approx$4k (vanilla GRU) to $\approx$41k (the hidden-64 benchmark hybrid), with the deployed matched-size hybrid at $\approx$11k --- all well under a 1~MB footprint (see Chapter~\ref{ch:results}, Section~\ref{sec:footprint}).
 
 \section{Adaptive Loss Balancing (Uncertainty Weighting)}
 
@@ -96,7 +96,7 @@ implementations, and rather than assume one is best, the framework implements
     training cells.
     \item \textbf{Route~B --- learnable ODE-residual.} Here the ODE parameters
     (e.g.\ the Verhulst $r$ and $K$) are \emph{learnable} and are trained jointly
-    with the network; the physics loss penalises the residual between the network's
+    with the network; the physics loss penalizes the residual between the network's
     autograd time-derivative and the ODE. This costs roughly $3\times$ the training
     time but lets the physical law adapt to the data rather than importing a fixed,
     possibly mismatched shape.
@@ -105,7 +105,7 @@ implementations, and rather than assume one is best, the framework implements
 Similarly, the loss balance is evaluated under both a \textbf{fixed weight} and the
 \textbf{homoscedastic uncertainty weighting} of Section~4.3. The hyperparameters
 (hidden size, sequence length, learning rate, physics weight) are selected by
-\textbf{Optuna} Bayesian (TPE) optimisation, which is distinct from the Bayesian
+\textbf{Optuna} Bayesian (TPE) optimization, which is distinct from the Bayesian
 \emph{interpretation} of the uncertainty-weighted loss. Chapter~\ref{ch:results}
 reports the outcome of these comparisons; in summary, the \emph{learnable} route~B
 with a well-chosen fixed weight proved the most robust, while the fixed closed-form

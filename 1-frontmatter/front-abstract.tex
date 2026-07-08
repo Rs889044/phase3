@@ -1,0 +1,18 @@
+\chapter{Abstract}
+
+\begin{tabular}{@{} >{\bfseries}p{0.2\textwidth} p{0.77\textwidth} @{}}
+\MakeUppercase{Keywords} &
+State of Health (SOH); Remaining Useful Life (RUL); Physics-Informed Learning;
+Hybrid Models; Gated Recurrent Unit (GRU); Battery Degradation;
+Lithium-ion Batteries; Prognostics and Health Management (PHM);
+Edge-compatible architecture; ODE Regularization; NASA PCoE; CALCE \\
+\end{tabular}
+\par
+
+\begin{doublespacing}
+Accurate estimation of the State of Health (SOH) and Remaining Useful Life (RUL) of lithium-ion batteries is a prerequisite for the safe and economical operation of Electric Vehicles (EVs). Prognostics research currently divides between model-based methods, which are interpretable but computationally demanding, and data-driven methods, which are accurate but physically unconstrained and difficult to deploy on the resource-limited microcontrollers of a Battery Management System (BMS).
+
+This thesis develops and evaluates a hybrid physics-informed framework that regularizes a lightweight Gated Recurrent Unit (GRU) with tractable empirical degradation physics. Instead of solving electrochemical Partial Differential Equations (PDEs), the framework embeds two Ordinary Differential Equation (ODE) priors --- the Verhulst logistic law and a double-exponential law --- in the loss function, in two variants that are compared head-to-head: a fixed closed-form prior (route~A) and a learnable ODE residual whose parameters train jointly with the network (route~B). Nine models --- two non-learned floors (a double-exponential curve fit and a support vector regressor), LSTM, GRU, two Transformer scales, a Neural-ODE, and the two hybrids --- are evaluated on the NASA PCoE and CALCE datasets under a leak-free leave-one-cell-out protocol in which every learned model receives the same fixed-scale cycle input, together with standard PHM prognostic metrics, a physics-design ablation with a de-confound control, and a Cortex-M4 deployment profile.
+
+The learnable route-B hybrid is the most accurate model in the benchmark (SOH RMSE $0.0262 \pm 0.0029$, best or near-best on every held-out cell), the most physically consistent learned model (monotone fraction $0.918$), and the only learned model with clearly positive prognostic calibration (cumulative relative accuracy $0.38$). It outperforms a thirteen-times-larger high-capacity Transformer on 11 of 12 runs ($-37.5\%$ mean RMSE), and the de-confound ablation attributes this gain to the physics residual itself rather than to the added time input. The fixed prior (route~A) is consistently weaker, and an evaluated homoscedastic uncertainty weighting did not improve on a fixed loss weight; both negative results are reported. Quantized to int8, an 11k-parameter deployment variant measures 20.2~KB of flash and 1.25~KB of RAM --- about 2\% of a Cortex-M4 budget and thirty times less flash than the high-capacity Transformer --- while remaining ahead of every baseline. The framework's main limitation is also identified and explained: on a zero-shot transfer to the much longer-lived CALCE cell, the learnable variant degrades because its cycle coordinate extrapolates beyond the training range, a failure mode with a diagnosed mechanism and candidate mitigations. The thesis concludes that a small recurrent network with a learnable physics regularizer is a practical, physically plausible, and deployable approach to on-board battery prognostics at realistic data scales.
+\end{doublespacing}

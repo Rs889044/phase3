@@ -12,7 +12,7 @@ most physics-informed work in the battery domain relies on computationally
 expensive PDE-PINNs.
 
 To bridge this gap, the work proposed a \textbf{lightweight hybrid framework} that
-regularises a data-driven Gated Recurrent Unit (GRU) with tractable empirical
+regularizes a data-driven Gated Recurrent Unit (GRU) with tractable empirical
 degradation physics. Two physics mechanisms were implemented and \emph{compared}: a
 fixed closed-form prior used as a soft penalty (\textbf{route~A}, using Verhulst
 and double-exponential laws) and a \emph{learnable} ODE-residual whose parameters
@@ -64,12 +64,13 @@ than the interim report's claim that the hybrid always wins:
     inside the model has physically meaningful, inspectable parameters.
     \item \textbf{Deployment footprint.} A matched-size route-B hybrid (hidden
     $=32$, $\approx$11k parameters) measures 20.2~KB of int8 flash (PyTorch
-    dynamic quantisation, qnnpack) with 1.25~KB of activation RAM --- 2\% of the
+    dynamic quantization, qnnpack) with 1.25~KB of activation RAM --- 2\% of the
     Cortex-M4 flash budget, $30\times$ less flash and $11\times$ lower latency
     than the heavy Transformer, and $3.5\times$ less flash than the light one.
     Shrinking from 41k to 11k parameters costs some accuracy
-    ($0.0262 \rightarrow 0.0328$), yet the deployed model remains more accurate
-    than every baseline in the benchmark.
+    ($0.0262 \rightarrow 0.0328$), yet the deployed model remains nominally
+    ahead of every baseline in the benchmark (its confidence interval overlaps
+    the light Transformer's).
     \item \textbf{Negative results.} The homoscedastic uncertainty weighting did
     not improve on a well-chosen fixed weight, so the fixed weight is adopted
     for the main benchmark models; the Neural-ODE baseline failed to clear the
@@ -79,7 +80,7 @@ than the interim report's claim that the hybrid always wins:
 \end{itemize}
 
 In summary, the thesis shows that a lightweight recurrent model with a learnable
-physics regulariser is a practical route to deployable EV battery prognostics:
+physics regularizer is a practical route to deployable EV battery prognostics:
 it is the most accurate and most physically plausible model in a leak-free,
 symmetric benchmark, and it is small enough for on-board inference. Its main
 identified weakness, long-horizon extrapolation of the cycle coordinate across
@@ -97,8 +98,8 @@ work:
     physical constraint tightens) could recover route~A's accuracy on typical cells
     without its failure mode on atypical ones.
     \item \textbf{On-board deployment validation.} The int8 sizes are measured
-    from serialised quantised models, but the Cortex-M4 latency remains an
-    analytic MACs/clock estimate. Flashing the quantised export (ONNX or
+    from serialized quantized models, but the Cortex-M4 latency remains an
+    analytic MACs/clock estimate. Flashing the quantized export (ONNX or
     TFLite-Micro) to a physical M4 board and measuring wall-clock inference and
     energy per window would close the deployment loop.
     \item \textbf{Broader chemistries and operating conditions.} Both datasets are
@@ -124,6 +125,6 @@ work:
     of the proposed hybrid within the PIML design space.
     \item \textbf{Per-cell online adaptation.} Because route~B learns its ODE
     parameters, a lightweight online update of those parameters during deployment
-    could let a single shipped model specialise to the cell it is actually
+    could let a single shipped model specialize to the cell it is actually
     monitoring.
 \end{itemize}
