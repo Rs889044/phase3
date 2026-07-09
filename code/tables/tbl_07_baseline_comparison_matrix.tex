@@ -12,6 +12,7 @@ LSTM & recurrent baseline & stronger RNN (more gates/params) \\
 Transformer (light) & attention baseline & edge-sized attention model (matched to deployable budget) \\
 Transformer (heavy) & attention (high-capacity) & large attention model --- high-capacity accuracy reference \\
 Neural-ODE & genuine PIML & continuous-time latent dynamics; extreme-hardware comparator \\
+Backbone-64 (no physics) & matched-capacity control & identical 41k backbone and t-channel as the hybrids, physics loss off \\
 Hybrid route A & PINN (closed-form prior) & penalize deviation from the fitted curve; no autograd solver \\
 Hybrid route B & PINN (ODE residual) & learnable Verhulst residual; the main proposed model \\
 \bottomrule

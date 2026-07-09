@@ -1,10 +1,11 @@
 model,Cross RMSE
 double_exp_fit,0.6721
 svr,0.1566
-transformer,0.0859
-transformer_heavy,0.1018
-lstm,0.0993
-gru,0.1125
-neural_ode,0.0977
-hybrid_B,0.2617
-hybrid,0.0963
+transformer,0.1037
+transformer_heavy,0.1205
+lstm,0.0867
+gru,0.0884
+neural_ode,0.1017
+hybrid_nophys,0.1018
+hybrid_B,0.2094
+hybrid,0.0903

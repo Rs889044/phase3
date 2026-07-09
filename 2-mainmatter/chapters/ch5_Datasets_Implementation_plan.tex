@@ -109,9 +109,31 @@ Tensorization & \multicolumn{2}{c}{MinMax scaling (train cells only) + sliding w
 \noindent
 Both datasets are processed into the \emph{same} eight-feature per-cycle
 representation (plus one dataset-specific feature), so the model sees a consistent
-input space across datasets. Figure~\ref{fig:feature_corr} shows that these
-features are strongly correlated with SOH on every cell, justifying the feature
-choice.
+input space across datasets. One column requires a caution: \texttt{ir\_proxy\_ohm}
+holds a directly measured internal resistance on CALCE but a $|\Delta V/\Delta I|$
+onset proxy on NASA --- two related but physically different quantities under one
+column name, which contributes to the feature shift in the cross-dataset transfer
+(Chapter~\ref{ch:results}, Section~\ref{sec:cross_dataset}).
+Figure~\ref{fig:feature_corr} shows that these features are strongly correlated
+with SOH on every cell.
+
+\noindent
+\textbf{Feature--label proximity.} The strength of these correlations must be read
+with care, because two features are close relatives of the label itself. Under a
+constant-current discharge, \texttt{discharge\_time\_s} is approximately capacity
+divided by current --- very nearly a rescaled copy of the same-cycle capacity from
+which the SOH label is computed --- and \texttt{ica\_area} approximates the charge
+throughput of the same cycle. Two consequences follow and are kept in view when
+reading Chapter~\ref{ch:results}. First, the pointwise SOH task is made
+substantially easier by these near-proxy inputs, which is one reason every
+competent model lands within a narrow error band and the informative differences
+between models appear in physical consistency, prognostic calibration, and
+robustness rather than in raw RMSE. Second, a production BMS rarely observes
+complete constant-current discharges (real usage is partial and irregular), so
+the per-cycle availability of these features is itself an assumption of the
+laboratory datasets. An ablation with same-cycle capacity proxies excluded
+(for example, features lagged by one cycle, or charge-side ICA features only) is
+identified as worthwhile future work.
 
 \begin{figure}[H]
     \centering
@@ -226,6 +248,18 @@ Based on the data structures extracted during early implementation phases, the p
     \item \textbf{Signal Smoothing:} Savitzky--Golay filtering applied to the charge-curve signals \emph{before} the $dQ/dV$ differentiation in the ICA feature extraction (and for trend visualization). The SOH target itself is deliberately left raw --- see the note above --- so that reported errors reflect the measured degradation.
     \item \textbf{Feature Scaling:} Bounding the features between 0.0 and 1.0 (MinMax scaling) or Standardizing them. This is absolutely critical for the convergence of neural networks and distance-based machine learning baselines.
 \end{enumerate}
+
+\noindent
+\textbf{Additional data-handling notes.} (i) Missing feature values are imputed
+within each cell only: forward-fill, then backward-fill for leading gaps, then the
+cell median. The backward-fill step assigns a later cycle's value to the first few
+cycles of a record --- a small non-causal convenience that is acceptable offline
+and is disclosed here because the deployment framing is online. (ii) On CALCE the
+charge current is reconstructed by numerically differentiating the cumulative
+charge-capacity column, so the ICA feature applies two numerical derivatives to
+the same signal; Savitzky--Golay smoothing precedes each differentiation, but the
+NASA and CALCE ICA features are consequently not computed from identical raw
+signals.
 % --- NEW CONTENT ENDS HERE ---
 
 \section{Evaluation Strategy}

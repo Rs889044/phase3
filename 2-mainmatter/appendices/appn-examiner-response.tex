@@ -17,14 +17,15 @@ lightweight Gated Recurrent Unit (GRU) with empirical degradation physics for
 SOH and RUL estimation of lithium-ion cells. Two physics mechanisms are
 implemented and compared: a fixed closed-form prior (route~A, using the
 integrated Verhulst and double-exponential laws) and a learnable ODE residual
-(route~B). Nine models are evaluated on the NASA PCoE and CALCE datasets under
-a leak-free leave-one-cell-out protocol with symmetric inputs. The learnable
-route-B hybrid is the most accurate model in the benchmark (SOH RMSE
-$0.0262 \pm 0.0029$), the most physically consistent learned model ($0.918$),
-and the best-calibrated prognostically (CRA $0.38$); quantized to int8, an
-11k-parameter deployment variant measures 20.2~KB of flash, about 2\% of a
-Cortex-M4 budget. Negative results (uncertainty weighting, cross-dataset
-extrapolation of the cycle coordinate) are reported with diagnosed mechanisms.
+(route~B). Ten models are evaluated on the NASA PCoE and CALCE datasets under
+a leak-free leave-one-cell-out protocol with symmetric inputs and a
+matched-capacity control. The learnable route-B hybrid attains the lowest mean
+SOH RMSE in the benchmark ($0.0295 \pm 0.0096$; the same backbone without the
+physics loss scores $0.0373$) and the highest physical consistency of any
+learned model ($0.902$); quantized to int8, an 11k-parameter deployment variant
+measures 20.2~KB of flash, about 2\% of a Cortex-M4 budget. Negative results
+(uncertainty weighting, cross-dataset extrapolation of the cycle coordinate,
+the deployed-size accuracy trade-off) are reported with diagnosed mechanisms.
 
 \section*{How the Phase-2 Feedback Has Been Addressed}
 
@@ -101,9 +102,9 @@ laws are used in their integrated closed forms, fit once on the training cells
 and applied as a soft penalty, with no ODE solving. Rather than assuming one
 mechanism is better, the thesis implements \emph{both} route~A and the
 ODE-residual route~B and lets the data decide. The comparison is a central
-result: the learnable route~B outperforms the integrated fixed prior on three
-of four held-out cells and overall, so both the suggested approach and the
-evidence for going beyond it are in the thesis.
+result: the learnable route~B is better than or equal to the integrated fixed
+prior on all four held-out cells and overall, so both the suggested approach
+and the evidence for going beyond it are in the thesis.
 \textbf{Integration:} Section~\ref{sec:two_routes}
 (Chapter~\ref{ch:methodology}), Section~\ref{sec:central_finding} and
 Table~\ref{tab:perfold} (Chapter~\ref{ch:results}).
@@ -111,12 +112,12 @@ Table~\ref{tab:perfold} (Chapter~\ref{ch:results}).
 \paragraph{C3.} \emph{``The student has to provide extensive baselines for
 Physics informed machine learning methods for intended applications (extreme
 hardware constraint).''}\\
-\textbf{Response:} The benchmark was extended to nine models, all profiled for
-the Cortex-M4 target: two non-learned floors (double-exponential curve fit,
+\textbf{Response:} The benchmark was extended to ten models, all evaluated
+under the same protocol: two non-neural floors (double-exponential curve fit,
 SVR), LSTM, GRU, two Transformer scales, a continuous-time Neural-ODE as a
-PIML-family comparator, and the two hybrid variants. The Neural-ODE's failure
-to clear the curve-fit floor is reported. Broader PIML families are identified
-as future work.
+PIML-family comparator, a matched-capacity no-physics control, and the two
+hybrid variants; the deployment candidates are additionally profiled for the
+Cortex-M4 target. Broader PIML families are identified as future work.
 \textbf{Integration:} Table~\ref{tab:benchmarks}
 (Chapter~\ref{ch:datasets_implementation}), Tables~\ref{tab:benchmark}
 and~\ref{tab:footprint} (Chapter~\ref{ch:results}), future work in
@@ -125,9 +126,11 @@ Chapter~\ref{ch:conclusion}.
 \paragraph{C4.} \emph{``The student has to provide standard prognosis curves
 for the example.''}\\
 \textbf{Response:} Standard PHM prognostic evaluation was added: the
-$\alpha$-$\lambda$ accuracy with the $\pm20\%$ cone, the Prognostic Horizon,
-and the Cumulative Relative Accuracy, with RUL derived from the predicted SOH
-trajectory in the standard way.
+$\alpha$-$\lambda$ accuracy with the $\pm20\%$ cone and the Cumulative
+Relative Accuracy, with RUL derived from the predicted SOH trajectory in the
+standard way and post-EOL cycles masked so that only the informative pre-EOL
+region is scored (the Prognostic Horizon degenerates under this masking and is
+not used as a comparison axis).
 \textbf{Integration:} Section~\ref{sec:phm}, Table~\ref{tab:phm} and
 Figure~\ref{fig:alpha_lambda} (Chapter~\ref{ch:results}).
 
@@ -135,9 +138,10 @@ Figure~\ref{fig:alpha_lambda} (Chapter~\ref{ch:results}).
 model; stating `85 to 90\%' is insufficient.''}\\
 \textbf{Response:} The comparison is now fully quantified with a paired,
 fold-level analysis against a high-capacity Transformer: the hybrid's mean SOH
-RMSE is $37.5\%$ \emph{lower} (it wins 11 of 12 runs; run-level Wilcoxon
-$p=0.007$, reported with the stated four-cell caution), so the earlier
-qualitative claim is replaced by a measured result in the hybrid's favor.
+RMSE is $20.7\%$ lower (8 of 12 runs; not statistically significant with four
+cells), and its physical consistency is higher on all 12 runs --- the earlier
+qualitative claim is replaced by measured results with their statistical limits
+stated.
 \textbf{Integration:} Section~\ref{sec:transformer_gap} and
 Table~\ref{tab:gap} (Chapter~\ref{ch:results}).
 

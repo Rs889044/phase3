@@ -39,8 +39,9 @@
 %%
 %%
   \begin{FrontMatter}
-      \input 1-frontmatter/front-acknowledgements
-      \input 1-frontmatter/front-abstract
+      % NOTE: do NOT \input front-acknowledgements / front-abstract here.
+      % The template already places them (they appeared at pages i-iii);
+      % adding them here printed a second copy after the lists (pages xi-xiii).
       % enable this if you have abbrevations in your report
       \printGlossaryAndAbbreviations
       % use this  if you have notations in your report
