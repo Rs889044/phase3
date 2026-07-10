@@ -366,12 +366,12 @@ same time input, physics off → 0.0377; with the ODE residual → 0.0292.
 
 | Variant | SOH RMSE | Phys. cons. | Train time (s) |
 |---|---|---|---|
-| Route A · uncertainty weighting | 0.0330 | 0.879 | 1.37 |
-| Physics OFF (no t, no physics) | 0.0340 | 0.880 | 0.83 |
-| Route A · double-exp | 0.0349 | 0.881 | 1.41 |
-| Route A · logistic | 0.0351 | 0.881 | 1.29 |
-| Route B · ODE-residual (t + physics) | 0.0392 | **0.891** | 2.71 |
-| Physics OFF + t-channel (control) | 0.0431 | 0.881 | 2.31 |
+| Route A · uncertainty weighting | 0.0330 | 0.879 | 1.33 |
+| Physics OFF (no t, no physics) | 0.0340 | 0.880 | 0.84 |
+| Route A · double-exp | 0.0349 | 0.881 | 1.40 |
+| Route A · logistic | 0.0351 | 0.881 | 1.23 |
+| Route B · ODE-residual (t + physics) | 0.0392 | **0.891** | 2.40 |
+| Physics OFF + t-channel (control) | 0.0431 | 0.881 | 2.18 |
 
 Route B's physical consistency is the most stable reduced-protocol signal (best
 of all variants); its RMSE ranking here moves with the noise, which is precisely
@@ -541,9 +541,11 @@ should deploy that model instead.
    rebuilds everything from the raw measurements, and renders every figure, table,
    and result inline. The outputs are also pre-executed and embedded, so the
    notebook can be read without running it.
-4. A full run trains many small models on CPU (~10–20 minutes). A single-seed quick
-   mode (~4 minutes) is available via one flag in the setup cell; the canonical
-   multi-seed numbers are printed alongside as a reference regardless of mode.
+4. A full run trains many small models on CPU and takes roughly 45–60 minutes
+   (the heavy 225k-parameter Transformer dominates the wall time). A much faster
+   single-seed quick mode is available via one flag in the setup cell; the
+   canonical multi-seed numbers are printed alongside as a reference regardless
+   of mode.
 
 The notebook is **self-contained**: it depends only on the raw battery dataset and
 defines every function it uses internally.

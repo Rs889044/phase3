@@ -607,12 +607,12 @@ conclusion.}
 \toprule
 \textbf{Variant} & \textbf{SOH RMSE} & \textbf{Phys.Cons.} & \textbf{Train (s)} \\
 \midrule
-Route A $\cdot$ uncertainty-wt         & 0.0330 & 0.879 & 1.43 \\
-Physics OFF (no t, no physics)         & 0.0340 & 0.880 & 0.83 \\
-Route A $\cdot$ double-exp             & 0.0349 & 0.881 & 1.44 \\
-Route A $\cdot$ logistic               & 0.0351 & 0.881 & 1.27 \\
-Route B $\cdot$ ODE-residual (t $+$ physics) & 0.0392 & \textbf{0.891} & 2.48 \\
-Physics OFF $+$ t-channel (control)    & 0.0431 & 0.881 & 2.35 \\
+Route A $\cdot$ uncertainty-wt         & 0.0330 & 0.879 & 1.33 \\
+Physics OFF (no t, no physics)         & 0.0340 & 0.880 & 0.84 \\
+Route A $\cdot$ double-exp             & 0.0349 & 0.881 & 1.40 \\
+Route A $\cdot$ logistic               & 0.0351 & 0.881 & 1.23 \\
+Route B $\cdot$ ODE-residual (t $+$ physics) & 0.0392 & \textbf{0.891} & 2.40 \\
+Physics OFF $+$ t-channel (control)    & 0.0431 & 0.881 & 2.18 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -634,7 +634,7 @@ Three observations survive the noise:
     no dependable benefit at this data scale, so the fixed weight is used for
     the main benchmark models.
     \item \textbf{Route~B costs $\sim$3$\times$ the training time} of the
-    no-physics baseline ($2.5$\,s vs.\ $0.8$\,s here). This cost is paid
+    no-physics baseline ($2.4$\,s vs.\ $0.8$\,s here). This cost is paid
     offline; the deployed inference network is unchanged.
 \end{enumerate}
 
