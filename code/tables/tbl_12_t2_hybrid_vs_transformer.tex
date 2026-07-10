@@ -1,13 +1,15 @@
 \begin{table}
-\caption{Hybrid vs. the heavy Transformer at the fold level (Wilcoxon signed-rank test).}
+\caption{Paired fold-level comparisons: hybrid vs. the heavy Transformer, and route B vs. its matched-capacity control (Wilcoxon signed-rank test).}
 \label{tab:t2_hybrid_vs_transformer}
 \begin{tabular}{lllllll}
 \toprule
-Comparison & Mean & Heavy Tf & Rel.gap\% & Folds won & Wilcoxon p & Sig. \\
+Comparison & Mean & Ref. & Rel.gap\% & Folds won & Wilcoxon p & Sig. \\
 \midrule
-Hybrid (route A) vs Transformer (heavy) (SOH RMSE) & 0.0364 & 0.0372 & -2.2 & 6/12 & 0.970 & no \\
-Hybrid (route B) vs Transformer (heavy) (SOH RMSE) & 0.0295 & 0.0372 & -20.7 & 8/12 & 0.339 & no \\
-Hybrid (route B) vs Transformer (heavy) (Phys. cons.) & 0.902 & 0.764 & 18.1 & 12/12 & 4.9e-04 & yes \\
+Hybrid (route A) vs Transformer (heavy) (SOH RMSE) & 0.0382 & 0.0369 & 3.5 & 4/12 & 0.622 & no \\
+Hybrid (route B) vs Transformer (heavy) (SOH RMSE) & 0.0292 & 0.0369 & -21.0 & 5/12 & 0.850 & no \\
+Hybrid (route B) vs Transformer (heavy) (Phys. cons.) & 0.884 & 0.770 & 14.9 & 12/12 & 4.9e-04 & yes \\
+Hybrid (route B) vs Backbone-64 (no physics) (SOH RMSE) & 0.0292 & 0.0377 & -22.6 & 11/12 & 0.021 & yes \\
+Hybrid (route B) vs Backbone-64 (no physics) (Phys. cons.) & 0.884 & 0.879 & 0.7 & 7/12 & 0.168 & no \\
 \bottomrule
 \end{tabular}
 \end{table}

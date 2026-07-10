@@ -94,14 +94,14 @@ Initial Capacity & 1.856 / 2.035 / 1.891 / 1.855 Ah & $\approx 1.14$ Ah (0.88 Ah
 Cycles Extracted & 168 / 168 / 168 / 132 & 878 continuous cycles \\
 Primary Target (Y) & per-cycle capacity $\rightarrow$ SOH $= Q/Q_\text{rated}$ (raw, unsmoothed) & per-cycle capacity $\rightarrow$ SOH $= Q/Q_\text{rated}$ (raw, unsmoothed) \\
 \midrule
-\textbf{Shared physics-informed features} & \multicolumn{2}{c}{\texttt{ica\_peak\_voltage\_V}, \texttt{ica\_peak\_magnitude}, \texttt{ica\_area} (from $dQ/dV$)} \\
+\textbf{Shared physics-informed features} & \multicolumn{2}{>{\centering\arraybackslash}p{\dimexpr0.78\textwidth-2\tabcolsep\relax}@{}}{\texttt{ica\_peak\_voltage\_V}, \texttt{ica\_peak\_magnitude}, \texttt{ica\_area} (from $dQ/dV$)} \\
 \midrule
-\textbf{Electrical / state features} & \multicolumn{2}{c}{\texttt{discharge\_time\_s}, \texttt{v\_min}, \texttt{v\_mean}, \texttt{v\_var}, \texttt{ir\_proxy\_ohm}} \\
+\textbf{Electrical / state features} & \multicolumn{2}{>{\centering\arraybackslash}p{\dimexpr0.78\textwidth-2\tabcolsep\relax}@{}}{\texttt{discharge\_time\_s}, \texttt{v\_min}, \texttt{v\_mean}, \texttt{v\_var}, \texttt{ir\_proxy\_ohm}} \\
 \midrule
 Dataset-specific feature & \texttt{temp\_rise\_C} (ambient temperature available) & \texttt{internal\_resistance\_Ohm} (measured) \\
 \midrule
 Record count & tens of thousands of raw points per cell & 260{,}931 raw Channel records \\
-Tensorization & \multicolumn{2}{c}{MinMax scaling (train cells only) + sliding window; sequence length 8--15 (set by HPO)} \\
+Tensorization & \multicolumn{2}{>{\centering\arraybackslash}p{\dimexpr0.78\textwidth-2\tabcolsep\relax}@{}}{MinMax scaling (train cells only) + sliding window; sequence length 8--15 (set by HPO)} \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -173,8 +173,13 @@ alternate, and per-cycle capacity is taken from the discharge phase.
     \item \textbf{Engineered predictor features:} the shared eight-feature set
     (ICA peak voltage/magnitude/area, discharge time, $v_\text{min}$,
     $v_\text{mean}$, intra-cycle voltage variance, IR proxy) plus a NASA-only
-    temperature-rise feature. Three NASA charge cycles with corrupted voltage logs
-    (B0005/06/07 cyc.~32; B0018 cyc.~46,57) are flagged but not dropped.
+    temperature-rise feature. A few cycles whose preceding charge log is
+    corrupted (B0005/06/07 cyc.~30; B0018 cyc.~45,\,55) are flagged as
+    ICA-unusable and imputed from their neighbours rather than dropped. (The
+    charge--discharge pairing itself is made by operation order in the raw
+    \texttt{.mat} sequence --- the last charge preceding each discharge ---
+    with an assert; a positional pairing would silently shift the ICA features
+    by one to two cycles past the corrupted extra charge operations.)
     \item \textbf{Regeneration:} the localized capacity ``healing'' that a naive
     data-driven model may mistake for genuine recovery is shown for B0005 in
     Figure~\ref{fig:nasa_regen} (36 jumps, the largest 0.088~Ah).
@@ -320,9 +325,15 @@ To satisfy the requirement for rigorous evaluation, the following comparison mat
 % --- TABLE 5.2: BENCHMARKS ---
 \begin{table}[H]
 \centering
-\renewcommand{\arraystretch}{1.5} 
+\caption{Benchmark Baselines Comparison Matrix}
+\label{tab:benchmarks}
+\renewcommand{\arraystretch}{1.5}
+% Single-space the cell text (the table inherits the document's 1.5 line
+% spacing otherwise, making it taller than the text block and pushing its
+% bottom rule and caption into the footer).
+\renewcommand{\baselinestretch}{1}
 \small % Reduces font size slightly to fit more descriptive text
-\begin{tabularx}{\textwidth}{@{} >{\raggedright\arraybackslash}p{2.8cm} >{\raggedright\arraybackslash}p{3.2cm} X @{}} 
+\begin{tabularx}{\textwidth}{@{} >{\raggedright\arraybackslash}p{2.8cm} >{\raggedright\arraybackslash}p{3.2cm} X @{}}
 \toprule
 \textbf{Model Category} & \textbf{Specific Algorithm} & \textbf{Role in Research} \\ 
 \midrule
@@ -335,14 +346,12 @@ To satisfy the requirement for rigorous evaluation, the following comparison mat
 
 \textbf{Data-Driven (Attention)} & Transformer --- \emph{light} ($\approx$17k params) and \emph{heavy} ($\approx$225k params) & \textbf{Complexity Benchmark:} Two attention scales. The \emph{light} model is edge-sized and hyperparameter-tuned like every baseline; the \emph{heavy} model is a high-capacity accuracy reference at the parameter scale of published attention models, testing whether pure data-driven ``brute force'' can outperform physics-guided learning in data-scarce scenarios. \\
 
-\textbf{Physics-Informed (Alternative)} & Neural-ODE & \textbf{PIML Control:} A continuous-time physics-informed alternative (latent ODE dynamics). Ensures the proposed hybrid is compared against another physics-motivated architecture, not only black boxes. \\
+\textbf{Physics-Informed (Alternative)} & Neural-ODE & \textbf{PIML Control:} A continuous-time physics-informed alternative (a last-observation latent-ODE head). Ensures the proposed hybrid is compared against another physics-motivated architecture, not only black boxes. \\
 
 \textbf{Hybrid (Proposed)} & \textbf{Hybrid PINN (Physics-Regularized)} & \textbf{The Solution:} Evaluated on RMSE, data efficiency (25\%--100\% volume), and the ability to maintain physical consistency during extrapolation. \\
 
 \bottomrule
 \end{tabularx}
-\caption{Benchmark Baselines Comparison Matrix}
-\label{tab:benchmarks}
 \end{table}
 \noindent
 Both non-learned floors --- the double-exponential curve fit and the SVR --- are

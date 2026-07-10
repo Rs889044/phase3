@@ -20,9 +20,9 @@ integrated Verhulst and double-exponential laws) and a learnable ODE residual
 (route~B). Ten models are evaluated on the NASA PCoE and CALCE datasets under
 a leak-free leave-one-cell-out protocol with symmetric inputs and a
 matched-capacity control. The learnable route-B hybrid attains the lowest mean
-SOH RMSE in the benchmark ($0.0295 \pm 0.0096$; the same backbone without the
-physics loss scores $0.0373$) and the highest physical consistency of any
-learned model ($0.902$); quantized to int8, an 11k-parameter deployment variant
+SOH RMSE in the benchmark ($0.0292 \pm 0.0100$; the same backbone without the
+physics loss scores $0.0377$) and the highest physical consistency of any
+learned model ($0.884$); quantized to int8, an 11k-parameter deployment variant
 measures 20.2~KB of flash, about 2\% of a Cortex-M4 budget. Negative results
 (uncertainty weighting, cross-dataset extrapolation of the cycle coordinate,
 the deployed-size accuracy trade-off) are reported with diagnosed mechanisms.
@@ -138,10 +138,11 @@ Figure~\ref{fig:alpha_lambda} (Chapter~\ref{ch:results}).
 model; stating `85 to 90\%' is insufficient.''}\\
 \textbf{Response:} The comparison is now fully quantified with a paired,
 fold-level analysis against a high-capacity Transformer: the hybrid's mean SOH
-RMSE is $20.7\%$ lower (8 of 12 runs; not statistically significant with four
-cells), and its physical consistency is higher on all 12 runs --- the earlier
-qualitative claim is replaced by measured results with their statistical limits
-stated.
+RMSE is $21.0\%$ lower (though only 5 of 12 individual runs --- the mean gap
+reflects the Transformer's run-to-run variance; not statistically significant
+with four cells), and its physical consistency is higher on all 12 runs --- the
+earlier qualitative claim is replaced by measured results with their
+statistical limits stated.
 \textbf{Integration:} Section~\ref{sec:transformer_gap} and
 Table~\ref{tab:gap} (Chapter~\ref{ch:results}).
 

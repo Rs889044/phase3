@@ -8,6 +8,17 @@ honest findings. The accompanying notebook reproduces every number, table, and
 figure referenced here directly from the raw battery dataset; this document is the
 written companion to that notebook.
 
+> **Update (2026-07-10).** The NASA charge↔discharge pairing was corrected
+> (the raw `.mat` sequence contains extra/corrupted charge operations that a
+> positional pairing silently absorbed, leaving most ICA features 1–2 cycles
+> stale) and the full pipeline was re-executed. **The executed notebook and its
+> `tables/`/`figures/` outputs are the authoritative numbers**; specific result
+> values quoted in the prose below may predate that rerun. Headline results
+> after the fix: route B `0.0292 ± 0.0100` SOH RMSE vs `0.0377` for the
+> matched-capacity control (−22.6 %, 11/12 paired runs, run-level Wilcoxon
+> p = 0.021), physical consistency 0.884 (highest of the learned models),
+> deployed 11k variant `0.0469 ± 0.0217` at 20.2 KB int8.
+
 ---
 
 ## 1. Objective and scientific question
@@ -388,13 +399,16 @@ footprint**, on equal-footing protocol — not on peak accuracy.
    reproduce exactly.
 2. **Real physics parameters** replace earlier placeholders; the double-exponential
    beats the logistic by information criterion on every cell.
-3. **The learnable ODE-residual hybrid (route B) is the robust winner** — consistent
-   across every held-out cell and **significantly the most physically consistent
-   model** (12/12 folds). The **fixed prior (route A) can hurt atypical cells**.
+3. **The learnable ODE-residual hybrid (route B) is the robust winner** — the lowest
+   mean SOH RMSE (0.0292) and the most physically consistent learned model (0.884),
+   more physically consistent than the heavy Transformer on 12/12 runs. The
+   **fixed prior (route A) can hurt atypical cells**.
 4. **Statistics are tested at the fold level.** Route B's mean accuracy edge over
-   the Transformer (−38.6 %) is *not* significant (4 cells, high variance), while
-   its physical-consistency edge *is* (p ≈ 5 × 10⁻⁴). Claim "significantly more
-   plausible," not "significantly more accurate."
+   the heavy Transformer (−21.0 %) is *not* significant (4 cells, high variance;
+   only 5/12 individual runs), while its physical-consistency edge *is*
+   (p ≈ 5 × 10⁻⁴) — claim "significantly more plausible," not "significantly more
+   accurate." Against its own matched-capacity control the accuracy edge is
+   near-uniform (−22.6 %, 11/12 paired runs, run-level p = 0.021).
 5. **The physics genuinely helps**, beyond the extra input it introduces, per the
    de-confound control.
 6. **Lightweight is earned by measurement:** an 11 k-parameter hybrid retains the
@@ -452,3 +466,22 @@ footprint**, on equal-footing protocol — not on peak accuracy.
 
 The notebook is **self-contained**: it depends only on the raw battery dataset and
 defines every function it uses internally.
+
+**Required data layout.** The notebook searches upward from its own folder for a
+`data/` directory containing both `data/NASA/` and `data/CALCE/`. Note that the
+NASA ICA features are parsed from the **raw `.mat` files** — the per-cycle CSVs
+alone are not sufficient:
+
+```
+data/
+├── NASA/
+│   ├── B0005_cycle_summary.csv          (and B0006/B0007/B0018)
+│   ├── B0005_discharge_timeseries.csv   (and B0006/B0007/B0018)
+│   └── raw data/
+│       └── B0005.mat  B0006.mat  B0007.mat  B0018.mat   ← required for ICA
+└── CALCE/
+    └── CS2_35 channel CSV exports
+```
+
+Without the `.mat` files the NASA feature-building cell raises
+`FileNotFoundError`.

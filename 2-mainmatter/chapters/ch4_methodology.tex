@@ -80,6 +80,8 @@ Here, $\sigma_{data}$ and $\sigma_{phys}$ are learnable parameters representing 
 
 \textbf{Practical Safeguards:} To avoid degeneracy, we (a) initialize $\sigma_{phys}$ and $\sigma_{data}$ to reasonable values (0.1--1.0) and (b) apply a small regularizer if necessary to ensure the physics prior remains an active guide.
 
+\textbf{Implementation note:} the weighting is implemented in log-variance form, $\sum_k e^{-s_k}\mathcal{L}_k + \tfrac{1}{2}s_k$ with learnable $s_k = \log\sigma_k^2$ --- a Kendall-\emph{style} variant of the equation above, equivalent up to a factor-two rescaling of the effective task weight, which the learnable $s_k$ absorbs during training.
+
 \section{Two Physics Routes and What Is Compared}
 \label{sec:two_routes}
 
@@ -108,5 +110,6 @@ Similarly, the loss balance is evaluated under both a \textbf{fixed weight} and 
 \textbf{Optuna} Bayesian (TPE) optimization, which is distinct from the Bayesian
 \emph{interpretation} of the uncertainty-weighted loss. Chapter~\ref{ch:results}
 reports the outcome of these comparisons; in summary, the \emph{learnable} route~B
-with a well-chosen fixed weight proved the most robust, while the fixed closed-form
-prior (route~A) and uncertainty weighting were less reliable in this setting.
+with a well-chosen fixed weight proved the most robust, the fixed closed-form
+prior (route~A) was less reliable, and uncertainty weighting brought no reliable
+benefit over the fixed weight in this setting.

@@ -1,7 +1,7 @@
 variant,soh_rmse,phys,train_s
-Physics OFF (no t),0.0332,0.8994,1.0454
-Route A · uncertainty-wt,0.0361,0.8949,1.3821
-Route A · double-exp,0.0362,0.901,255.3807
-Route A · logistic,0.0363,0.9026,13.4515
-Route B · ODE-residual,0.0401,0.9073,2.7185
-Physics OFF + t-channel,0.0437,0.8911,2.4466
+Route A · uncertainty-wt,0.033,0.8792,1.3722
+Physics OFF (no t),0.034,0.8797,0.8286
+Route A · double-exp,0.0349,0.8813,1.409
+Route A · logistic,0.0351,0.8813,1.2876
+Route B · ODE-residual,0.0392,0.8912,2.7118
+Physics OFF + t-channel,0.0431,0.8813,2.306
