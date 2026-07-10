@@ -14,7 +14,7 @@ The proposed Hybrid Physics-Informed Deep Learning Framework operates as a seque
     \item \textbf{Feature Engineering Module:} Transforms raw data into physics-informed features. This involves computing \textbf{Incremental Capacity (ICA)} and \textbf{Differential Voltage (DVA)} curves to extract peak features that correlate with internal electrochemical states.
     
     \par \medskip 
-    \textit{Signal Smoothing Strategy:} Since Incremental Capacity Analysis (ICA) involves differentiating the capacity-voltage curve ($dQ/dV$), raw sensor noise is significantly amplified during the calculation. To mitigate this and ensure stable feature extraction, a \textbf{Savitzky-Golay filtering} stage is applied to the raw voltage data. This pre-processing step smooths the voltage curve while preserving the peak features essential for identifying Loss of Active Material (LAM) prior to numerical differentiation.
+    \textit{Signal Smoothing Strategy:} Since Incremental Capacity Analysis (ICA) involves differentiating the capacity-voltage curve ($dQ/dV$), raw sensor noise is significantly amplified during the calculation. To mitigate this and ensure stable feature extraction, a \textbf{Savitzky-Golay filtering} stage \cite{savitzky_golay} is applied to the raw voltage data. This pre-processing step smooths the voltage curve while preserving the peak features essential for identifying Loss of Active Material (LAM) prior to numerical differentiation.
 
     \item \textbf{Hybrid Modeling Module (Core):}
     \begin{itemize}
@@ -36,7 +36,7 @@ The proposed Hybrid Physics-Informed Deep Learning Framework operates as a seque
 \section{Deep Learning Component: Gated Recurrent Unit (GRU)}
 \label{sec:gru_component}
 
-The choice of the Gated Recurrent Unit (GRU) is driven by the project's requirement for computational feasibility on standard resources. While LSTMs are powerful, they possess three gates (input, forget, output), leading to a higher parameter count. GRUs simplify this to two gates (update and reset) without sacrificing the ability to capture long-term dependencies. The mathematical formulation of the GRU cell used in this framework is:
+The choice of the Gated Recurrent Unit (GRU) \cite{cho_gru} is driven by the project's requirement for computational feasibility on standard resources. While LSTMs are powerful, they possess three gates (input, forget, output), leading to a higher parameter count. GRUs simplify this to two gates (update and reset) without sacrificing the ability to capture long-term dependencies. The mathematical formulation of the GRU cell used in this framework is:
 
 \begin{itemize}
     \item \textbf{Update Gate ($z_t$):} Determines how much of the previous memory to retain.
@@ -66,7 +66,7 @@ The choice of the Gated Recurrent Unit (GRU) is driven by the project's requirem
 
 This efficient architecture ($O(L)$ complexity) makes it superior to Transformers ($O(L^2)$ complexity) for resource-constrained BMS implementations \cite{ref1_general}.
 
-\textbf{Implementation Notes:} The GRU hidden size (32--64) and sequence length (8--15 cycles) were selected by Optuna Bayesian (TPE) hyperparameter optimization. Parameter counts range from $\approx$4k (vanilla GRU) to $\approx$41k (the hidden-64 benchmark hybrid), with the deployed matched-size hybrid at $\approx$11k --- all well under a 1~MB footprint (see Chapter~\ref{ch:results}, Section~\ref{sec:footprint}).
+\textbf{Implementation Notes:} The GRU hidden size (32--64) and sequence length (8--15 cycles) were selected by Optuna \cite{akiba_optuna} Bayesian (TPE) hyperparameter optimization. Parameter counts range from $\approx$4k (vanilla GRU) to $\approx$41k (the hidden-64 benchmark hybrid), with the deployed matched-size hybrid at $\approx$11k --- all well under a 1~MB footprint (see Chapter~\ref{ch:results}, Section~\ref{sec:footprint}).
 
 \section{Adaptive Loss Balancing (Uncertainty Weighting)}
 \label{sec:uncertainty_weighting}
@@ -113,6 +113,7 @@ Similarly, the loss balance is evaluated under both a \textbf{fixed weight} and 
 \textbf{Optuna} Bayesian (TPE) optimization, which is distinct from the Bayesian
 \emph{interpretation} of the uncertainty-weighted loss. Chapter~\ref{ch:results}
 reports the outcome of these comparisons; in summary, the \emph{learnable} route~B
-with a well-chosen fixed weight proved the most robust, the fixed closed-form
-prior (route~A) was less reliable, and uncertainty weighting brought no reliable
-benefit over the fixed weight in this setting.
+proved the most robust, the fixed closed-form prior (route~A) was less reliable,
+and uncertainty weighting brought no reliable accuracy benefit over a well-chosen
+fixed weight in this setting (its one consistent effect, a physical-consistency
+gain on route~B, is quantified in Chapter~\ref{ch:results}).

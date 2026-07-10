@@ -1,17 +1,18 @@
 \begin{table}
-\caption{Design ablation: contribution of each physics component to SOH RMSE.}
+\caption{Design ablation on the full LOCO protocol (4 folds x 3 seeds): contribution of each physics component to SOH RMSE.}
 \label{tab:ablation_design}
 \begin{tabular}{lrrr}
 \toprule
  & soh\_rmse & phys & train\_s \\
 variant &  &  &  \\
 \midrule
-Route A $\cdot$ uncertainty-wt & 0.0330 & 0.8792 & 1.3293 \\
-Physics OFF (no t) & 0.0340 & 0.8797 & 0.8363 \\
-Route A $\cdot$ double-exp & 0.0349 & 0.8813 & 1.3992 \\
-Route A $\cdot$ logistic & 0.0351 & 0.8813 & 1.2279 \\
-Route B $\cdot$ ODE-residual & 0.0392 & 0.8912 & 2.3990 \\
-Physics OFF + t-channel & 0.0431 & 0.8813 & 2.1778 \\
+Route B $\cdot$ uncertainty-wt & 0.0259 & 0.9028 & 3.3316 \\
+Route B $\cdot$ ODE-residual & 0.0292 & 0.8845 & 3.8883 \\
+Physics OFF (no t) & 0.0312 & 0.8790 & 0.9697 \\
+Physics OFF + t-channel & 0.0377 & 0.8787 & 1.1302 \\
+Route A $\cdot$ uncertainty-wt & 0.0377 & 0.8806 & 1.2835 \\
+Route A $\cdot$ double-exp & 0.0382 & 0.8755 & 1.2420 \\
+Route A $\cdot$ logistic & 0.0383 & 0.8755 & 1.0968 \\
 \bottomrule
 \end{tabular}
 \end{table}

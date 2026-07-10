@@ -21,6 +21,12 @@ Where $\mathbf{X}_{k-T:k}$ represents the input tensor of historical data, $\the
 
 \textbf{End-of-Life (EOL) Definition:} End-of-Life (EOL) is defined as the first cycle index where $SOH \leq SOH_{EOL}$ \emph{and the condition persists for at least 5 consecutive cycles} (this persistence rule prevents a transient noisy reference cycle or a regeneration dip from triggering a false EOL). The primary threshold is $SOH_{EOL} = 80\%$ for both datasets (matching common automotive practice); a $70\%$ threshold is sometimes adopted for less demanding second-life applications, but all results in this thesis use the $80\%$ threshold. Both datasets are LCO, so the threshold choice reflects the application rather than a chemistry difference. All RUL calculations explicitly document the EOL threshold used.
 
+\textbf{RUL Definition:} Given the EOL cycle index $k_{EOL}$ determined by the rule above, the Remaining Useful Life at cycle $k$ is the number of cycles left until that point:
+\begin{equation}
+    RUL_k = k_{EOL} - k, \qquad k \leq k_{EOL}.
+\end{equation}
+$RUL_k$ is undefined for $k > k_{EOL}$ and for cells whose record never reaches the threshold (B0007 never crosses even the 70\% line within its record). Because $k_{EOL}$ depends on the chosen threshold and persistence rule, every reported RUL value carries that definition with it.
+
 \section{Physics Formulation (The Regularizer)}
 \label{sec:physics_formulation}
 
@@ -99,4 +105,4 @@ The ODE parameters $\theta_{phys}$ admit two treatments, and the framework imple
 
 \par\medskip
 \noindent \textbf{Note on Implementation Strategy:} 
-Equation~(\ref{eq:composite_loss}) represents the canonical form of a multi-objective physics-informed loss function, where the balance between data fidelity and physical consistency is controlled by static scalar weights ($\lambda_{data}, \lambda_{phys}$). Determining suitable values for these weights is non-trivial. Chapter~\ref{ch:methodology} (Section~\ref{sec:uncertainty_weighting}) therefore develops, in addition to the fixed-weight form above, a probabilistic alternative in which the static hyperparameters $\lambda$ are replaced by learnable uncertainty terms ($\sigma$) intended to adapt the balance automatically. Both weighting schemes are evaluated empirically in Chapter~\ref{ch:results}; on the datasets studied there, a well-chosen fixed weight proved the better default, and it is used for the main benchmark models.
+Equation~(\ref{eq:composite_loss}) represents the canonical form of a multi-objective physics-informed loss function, where the balance between data fidelity and physical consistency is controlled by static scalar weights ($\lambda_{data}, \lambda_{phys}$). Determining suitable values for these weights is non-trivial. Chapter~\ref{ch:methodology} (Section~\ref{sec:uncertainty_weighting}) therefore develops, in addition to the fixed-weight form above, a probabilistic alternative in which the static hyperparameters $\lambda$ are replaced by learnable uncertainty terms ($\sigma$) intended to adapt the balance automatically. Both weighting schemes are evaluated empirically in Chapter~\ref{ch:results}; on the datasets studied there, the learnable weighting brought no reliable accuracy gain over a well-chosen fixed weight, which is therefore used for the main benchmark models.

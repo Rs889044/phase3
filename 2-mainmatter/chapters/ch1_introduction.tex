@@ -39,13 +39,13 @@ To understand the difficulty of the prognostic challenge, one must appreciate th
     \label{fig:degradation_curve}
 \end{figure}
 
-Capturing this non-linearity—specifically the transition from linear degradation to the accelerated knee-point—is the central challenge of modern Battery Management Systems (BMS). Traditional industrial BMS rely on Equivalent Circuit Models (ECMs) or simple Coulomb counting. These methods treat the battery as a linear capacitor-resistor network. While computationally inexpensive, they fail to capture the complex physicochemical changes occurring during aging, leading to significant accumulation of error over time \cite{naseri_efficient}. They are essentially ``blind'' to the internal state of health until a calibration event occurs.
+Capturing this non-linearity—specifically the transition from linear degradation to the accelerated knee-point—is the central challenge of modern Battery Management Systems (BMS). Traditional industrial BMS rely on Equivalent Circuit Models (ECMs) or simple Coulomb counting \cite{plett_ekf, hu_ecm}. These methods treat the battery as a linear capacitor-resistor network. While computationally inexpensive, they fail to capture the complex physicochemical changes occurring during aging, leading to significant accumulation of error over time \cite{naseri_efficient}. They are essentially ``blind'' to the internal state of health until a calibration event occurs.
 
 Conversely, high-fidelity electrochemical models, such as the Doyle-Fuller-Newman (DFN) model or the Pseudo-Two-Dimensional (P2D) model, describe the internal ion concentrations, potentials, and intercalation kinetics using coupled Partial Differential Equations (PDEs) \cite{wang_pinn}. While highly accurate and scientifically interpretable, these ``white-box'' models are computationally prohibitive for the low-power microcontrollers found in standard EVs. Furthermore, they require the identification of over 20 specific electrochemical parameters (e.g., diffusion coefficients, reaction rate constants, pore tortuosity), many of which can only be determined through destructive testing. This renders them impractical for generalized use across different battery chemistries or for aging batteries where these parameters drift over time \cite{unmeasurable_states}.
 
 \section{The Rise of Data-Driven and Hybrid Approaches}
 
-The limitations of purely physical models have driven a broad shift toward ``black-box'' data-driven approaches in the academic literature. With the advent of large-scale open-source datasets from institutions like the NASA Prognostics Center of Excellence (PCoE) and the Center for Advanced Life Cycle Engineering (CALCE), researchers have demonstrated that deep learning architectures can map voltage, current, and temperature inputs directly to SOH outputs with high accuracy \cite{machine_learning_web}. Models like Long Short-Term Memory (LSTM) networks and Gated Recurrent Units (GRU) have become the standard for handling time-series battery data due to their ability to capture temporal dependencies and history-dependent degradation \cite{zhang_rnn}.
+The limitations of purely physical models have driven a broad shift toward ``black-box'' data-driven approaches in the academic literature. With the advent of large-scale open-source datasets from institutions like the NASA Prognostics Center of Excellence (PCoE) and the Center for Advanced Life Cycle Engineering (CALCE) \cite{nasa_datasets, he_calce}, researchers have demonstrated that deep learning architectures can map voltage, current, and temperature inputs directly to SOH outputs with high accuracy \cite{severson_data, machine_learning_web}. Models like Long Short-Term Memory (LSTM) networks \cite{hochreiter_lstm} and Gated Recurrent Units (GRU) \cite{cho_gru} have become the standard for handling time-series battery data due to their ability to capture temporal dependencies and history-dependent degradation \cite{zhang_rnn}.
 
 However, purely data-driven models suffer from three fundamental flaws that limit their industrial adoption:
 \begin{enumerate}
@@ -75,11 +75,23 @@ The primary objective of this thesis is to develop and validate a hybrid deep le
     \item \textbf{Hybrid Architecture Development:} To design a novel deep learning architecture that integrates a Gated Recurrent Unit (GRU) network with empirical degradation models (Verhulst and Double-Exponential) via a composite loss function. This objective specifically addresses the need for a ``lightweight'' PINN suitable for edge computing.
     \item \textbf{Advanced Loss Formulation:} To implement a dynamic loss weighting strategy based on homoscedastic uncertainty (Bayesian approximation) that automates the balancing of ``data loss'' and ``physics loss,'' and to test it empirically against static weighting (Chapter~\ref{ch:results}).
     \item \textbf{Rigorous Benchmarking:} To establish performance baselines using purely model-based methods (curve fitting) and purely data-driven methods (Standard GRU, SVR). This comparative analysis is crucial for quantifying the specific value-add of the hybrid approach, addressing the feedback regarding the necessity of model-driven baselines.
-    \item \textbf{Validation on Diverse Datasets:} To validate the model's robustness and generalizability using distinct datasets (NASA PCoE for constant loading, CALCE for dynamic loading), focusing on the model's ability to handle data artifacts like ``capacity regeneration'' without making physically impossible predictions.
+    \item \textbf{Validation on Diverse Datasets:} To validate the model's robustness and generalizability using distinct datasets (short-life NASA PCoE cells with heavy capacity regeneration; the long-life CALCE prismatic cell with a different load profile and form factor), focusing on the model's ability to handle data artifacts like ``capacity regeneration'' without making physically impossible predictions.
     \item \textbf{Quantification of Computational Cost:} To evaluate the inference time and parameter count of the proposed hybrid model against Transformer baselines, ensuring suitability for resource-constrained Battery Management Systems (BMS)
 
     
 \end{itemize}
+
+\section{Contributions}
+
+The main contributions of this thesis are:
+
+\begin{enumerate}
+    \item \textbf{A leak-free, reproducible benchmark of ten models} for SOH/RUL estimation on the NASA and CALCE datasets --- two non-neural floors, four purely data-driven networks (LSTM, GRU, and two Transformer scales), a Neural-ODE, a matched-capacity no-physics control, and the two proposed hybrid variants --- all evaluated under leave-one-cell-out with identical inputs, seeds, and metrics (Chapters~\ref{ch:datasets_implementation} and~\ref{ch:results}).
+    \item \textbf{A head-to-head comparison of fixed against learnable physics} within the same framework: the integrated closed-form prior (route~A) versus a learnable ODE residual (route~B). The learnable variant is better than or equal to the fixed prior on every held-out cell, and a matched-capacity control attributes its accuracy gain to the physics loss rather than to model capacity (Chapter~\ref{ch:results}).
+    \item \textbf{An empirical test of homoscedastic uncertainty weighting} against a tuned fixed loss weight for the data/physics balance, on the same full evaluation protocol as the benchmark, with the outcome reported as measured (Chapter~\ref{ch:results}).
+    \item \textbf{A measured Cortex-M4 deployment profile} of the proposed model against both Transformer scales --- int8 quantization, flash, activation RAM, MAC counts, and an analytic latency estimate --- with the accuracy cost of the deployment size stated explicitly (Chapter~\ref{ch:results}).
+    \item \textbf{A corrected, documented data pipeline} for the NASA and CALCE datasets, including the charge--discharge pairing fix, the CALCE timeline assembly, and label definitions enforced by automated invariant checks (Chapter~\ref{ch:datasets_implementation}).
+\end{enumerate}
 
 \section{Organization of the Report}
 

@@ -85,14 +85,17 @@ than the interim report's claim that the hybrid always wins:
     candidates ($0.877$); it earns its place through plausibility and footprint
     rather than peak accuracy, which belongs to the benchmark-size model.
     \item \textbf{Negative results.} The homoscedastic uncertainty weighting
-    shows no reliable benefit over a well-chosen fixed weight, so the fixed
-    weight is adopted
-    for the main benchmark models; the reduced-protocol ablations proved
-    noise-dominated and their design conclusions are superseded by the
-    full-protocol matched-capacity control; and the deployed-size accuracy
-    trade-off and route~B's cross-dataset failure are reported with their
-    mechanisms. Reporting these outcomes explicitly defines the limits of the
-    claims made.
+    shows no reliable accuracy benefit over a well-chosen fixed weight on
+    either physics route, so the fixed weight is retained for the main
+    benchmark models --- though on the full-protocol design ablation the
+    uncertainty-weighted route~B posts the best mean RMSE ($0.0259$) and the
+    most consistent trajectories ($0.903$, 10/12 runs), making it the natural
+    configuration to validate on a larger fleet. The same ablation shows the
+    raw cycle coordinate is mildly harmful without the physics term
+    ($0.0312 \rightarrow 0.0377$); and the deployed-size accuracy trade-off
+    and route~B's cross-dataset failure are reported with their mechanisms.
+    Reporting these outcomes explicitly defines the limits of the claims
+    made.
 \end{itemize}
 
 In summary, the thesis shows that a learnable physics residual improves a
@@ -123,7 +126,9 @@ work:
     \item \textbf{Broader chemistries and operating conditions.} Both datasets are
     LCO; validating on LFP/NMC cells and on field-collected partial-cycle data would
     test the framework beyond the cross-load/cross-form-factor transfer studied
-    here.
+    here. A natural first step is lightweight domain adaptation: fine-tuning the
+    learned ODE parameters or refitting the feature scaler on a small sample from
+    the target fleet, rather than retraining the whole network.
     \item \textbf{Coordinate saturation and collocation for long-horizon
     transfer.} Route~B's cross-dataset degradation traces to its cycle
     coordinate leaving the training range on trajectories much longer than the
@@ -139,14 +144,20 @@ work:
     \item \textbf{More cells for statistical power.} With four NASA cells the
     hybrid's mean accuracy edge over the heavy Transformer ($-21.0\%$, 5/12
     runs) cannot reach formal significance; evaluating on larger fleets
-    (e.g.\ the Toyota/MIT dataset) would settle the accuracy question and
-    re-test the uncertainty weighting where it is expected to matter.
-    \item \textbf{Broader PIML baselines.} The present study compares against one
-    physics-informed alternative (a continuous-time Neural-ODE). Extending the
-    comparison to further PIML families under the same hardware constraint ---
-    e.g.\ a closed-form-solution PINN head, a physics-guided feature model, or a
+    (e.g.\ the Toyota/MIT fast-charging dataset \cite{severson_data}) would
+    settle the accuracy question and re-test the uncertainty weighting where it
+    is expected to matter.
+    \item \textbf{Broader PIML baselines and a structure-free control.} The
+    present study compares against one physics-informed alternative (a
+    continuous-time Neural-ODE). Extending the comparison to further PIML
+    families under the same hardware constraint --- e.g.\ a
+    closed-form-solution PINN head, a physics-guided feature model, or a
     reduced-order electrochemical surrogate --- would strengthen the positioning
-    of the proposed hybrid within the PIML design space.
+    of the proposed hybrid within the PIML design space. One control is
+    particularly worth running: the same backbone penalized toward a learnable
+    \emph{constant} fade rate instead of the Verhulst law, which would separate
+    what the ODE form contributes from generic derivative regularization
+    (Chapter~\ref{ch:results}, Section~\ref{sec:central_finding}).
     \item \textbf{Per-cell online adaptation.} Because route~B learns its ODE
     parameters, a lightweight online update of those parameters during deployment
     could let a single shipped model specialize to the cell it is actually

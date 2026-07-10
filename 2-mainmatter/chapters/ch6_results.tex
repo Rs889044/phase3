@@ -47,10 +47,10 @@ Eight learned architectures are compared: \textbf{two Transformers} --- a
 other baseline) and a \emph{heavy}, high-capacity model (225k parameters, an
 accuracy reference at the parameter scale of the attention models reported in
 the literature) --- an LSTM, a vanilla GRU, a continuous-time baseline
-(Neural-ODE; implemented as a \emph{last-observation} latent-ODE head that
-encodes the window's most recent cycle and integrates latent dynamics over a
-fixed pseudo-time, so it does not exploit the window history the recurrent
-models see), a \textbf{matched-capacity control} (the hybrids' identical 41k
+(Neural-ODE \cite{chen_node}; implemented as a \emph{last-observation}
+latent-ODE head that encodes the window's most recent cycle and integrates
+latent dynamics over a fixed pseudo-time, so it does not exploit the window
+history the recurrent models see), a \textbf{matched-capacity control} (the hybrids' identical 41k
 backbone and time input with the physics loss switched off), and the proposed
 hybrid in its two physics variants: \textbf{route~A} (fixed closed-form
 Verhulst/double-exponential prior used as a soft penalty) and \textbf{route~B}
@@ -268,8 +268,11 @@ pre-correction run (in which the baselines received no time input, since the
 leaked coordinate went only to the hybrids) indicate a mixed effect on the
 small baselines, and the matched-capacity control shows the coordinate is not
 by itself responsible for the hybrid's accuracy: the control has the same input
-and does not approach route~B. The benchmark conclusion therefore does not rest
-on this design choice.
+and does not approach route~B. The design ablation quantifies the coordinate's
+own effect directly --- the backbone actually scores better \emph{without} the
+raw coordinate ($0.0312$) than with it ($0.0377$), and only the ODE residual
+makes the coordinate pay (Section~\ref{sec:ablations}). The benchmark
+conclusion therefore does not rest on this design choice.
 
 \section{The Central Finding: Learnable Physics (Route B) Outperforms the Fixed Prior}
 \label{sec:central_finding}
@@ -320,10 +323,27 @@ population-shift limitation with only two training cells.
     \label{fig:soh_b0005}
 \end{figure}
 
+\paragraph{Why the learnable residual helps.} Three mechanisms plausibly
+contribute, and they are stated here because the controls bound but do not
+fully separate them. First, the residual supervises the \emph{derivative} of
+the prediction at every training point --- a training signal the pointwise MSE
+does not provide --- which discourages the jagged cycle-to-cycle reversals the
+purely data-driven baselines produce. Second, because $(r,K)$ train jointly
+with the network, the constraint adapts its strength and shape to the training
+population instead of importing a fixed curve, which is precisely where
+route~A fails on the atypical B0006 (Figure~\ref{fig:fit_b0006}). Third, part
+of the benefit may be generic rather than specifically Verhulst-shaped: any
+well-behaved penalty on $d\hat{y}/dt$ would also smooth the trajectory, and
+the present controls (physics off, with and without the time channel) do not
+isolate the functional form itself. A structure-free control --- penalizing
+deviation of $d\hat{y}/dt$ from a learnable constant fade rate --- would
+separate the ODE structure from plain derivative regularization; it is noted
+as future work in Chapter~\ref{ch:conclusion}.
+
 \paragraph{Summary.} The lightweight physics-informed approach holds, and the
 physics mechanism matters: the learnable ODE-residual (route~B) should be
 preferred over the fixed closed-form prior (route~A). Route~B costs roughly
-$2$--$3\times$ more training time than the no-physics backbone
+$3\times$ more training time than the no-physics backbone
 (Section~\ref{sec:ablations}) in exchange for accuracy and the best physical
 plausibility at identical capacity. Since training is performed offline, this is
 an acceptable trade for a safety-critical application.
@@ -494,10 +514,10 @@ evidence of this thesis.
 \section{Prognostic (PHM) Assessment}
 \label{sec:phm}
 
-Beyond pointwise SOH error, the models were assessed with standard Prognostics and
-Health Management metrics: the $\alpha$-$\lambda$ accuracy (fraction of the
-evaluated life within a $\pm20\%$ cone of true RUL) and Cumulative Relative
-Accuracy (CRA). RUL is derived from the predicted SOH trajectory and the EOL
+Beyond pointwise SOH error, the models were assessed with the standard
+Prognostics and Health Management metrics of Saxena et al.~\cite{saxena_metrics}:
+the $\alpha$-$\lambda$ accuracy (fraction of the evaluated life within a
+$\pm20\%$ cone of true RUL) and Cumulative Relative Accuracy (CRA). RUL is derived from the predicted SOH trajectory and the EOL
 threshold (standard PHM practice), not a separate regressor. One property of
 this construction is stated explicitly: the RUL value assigned at cycle $k$ is
 computed from the model's full predicted SOH trajectory, whose later portion
@@ -586,94 +606,124 @@ cell.
 \section{Ablation Studies}
 \label{sec:ablations}
 
-Three ablations examine the design choices on a reduced protocol (2 folds
-$\times$ 2 seeds, folds B0005 and B0018). A finding of this thesis, learned
-during the correction process, is that this reduced protocol is
-\textbf{noise-dominated}: across otherwise-identical reruns with different
-initialization streams, the ranking of the design variants moved substantially,
-while the full four-fold benchmark remained stable. The reduced-protocol tables
-are therefore reported for completeness and read only where they agree with the
-full protocol; the authoritative de-confound evidence is the matched-capacity
-control row of Table~\ref{tab:benchmark}, which lives on the full protocol.
+Three ablations examine the design choices, and all of them run on the
+\emph{same} protocol as the main benchmark: all four leave-one-cell-out folds,
+three seeds, the benchmark configuration (learning rate $0.002$, physics
+weight $0.1$), and the shared cycle-coordinate channel for every variant
+except the explicit ``no~$t$'' baseline. Built this way, the design table is
+anchored to the benchmark: its control, route-A and route-B rows re-run the
+exact benchmark configurations and reproduce the corresponding rows of
+Table~\ref{tab:benchmark} to the fourth decimal. (An earlier version of these
+ablations used a reduced 2-fold $\times$ 2-seed protocol; a finding of the
+correction process was that its variant rankings moved substantially across
+otherwise-identical reruns, so the ablations were re-executed at full scale.
+Only the data-scarcity stress test of Section~\ref{sec:overfitting} remains on
+the reduced protocol and is read as indicative.)
 
 \begin{table}[H]
 \centering
-\caption{Physics-design ablation (route, prior, weighting) on the reduced
-2-fold $\times$ 2-seed protocol. Values are indicative only (see text); the
-full-protocol control row of Table~\ref{tab:benchmark} carries the de-confound
-conclusion.}
+\caption{Physics-design ablation (route, prior, weighting) on the full LOCO
+protocol (4 folds $\times$ 3 seeds). The control, route-A and route-B rows
+re-run the benchmark configurations of Table~\ref{tab:benchmark} and reproduce
+them exactly; ``no~t'' removes the cycle-coordinate channel entirely. The
+metric columns are deterministic; the training time is wall-clock per fold and
+varies between runs.}
 \label{tab:ablation}
 \begin{tabular}{l c c c}
 \toprule
 \textbf{Variant} & \textbf{SOH RMSE} & \textbf{Phys.Cons.} & \textbf{Train (s)} \\
 \midrule
-Route A $\cdot$ uncertainty-wt         & 0.0330 & 0.879 & 1.33 \\
-Physics OFF (no t, no physics)         & 0.0340 & 0.880 & 0.84 \\
-Route A $\cdot$ double-exp             & 0.0349 & 0.881 & 1.40 \\
-Route A $\cdot$ logistic               & 0.0351 & 0.881 & 1.23 \\
-Route B $\cdot$ ODE-residual (t $+$ physics) & 0.0392 & \textbf{0.891} & 2.40 \\
-Physics OFF $+$ t-channel (control)    & 0.0431 & 0.881 & 2.18 \\
+Route B $\cdot$ uncertainty-wt         & \textbf{0.0259} & \textbf{0.903} & 3.33 \\
+Route B $\cdot$ ODE-residual           & 0.0292 & 0.884 & 3.89 \\
+Physics OFF (no t)                     & 0.0312 & 0.879 & 0.97 \\
+Physics OFF $+$ t-channel (control)    & 0.0377 & 0.879 & 1.13 \\
+Route A $\cdot$ uncertainty-wt         & 0.0377 & 0.881 & 1.28 \\
+Route A $\cdot$ double-exp             & 0.0382 & 0.876 & 1.24 \\
+Route A $\cdot$ logistic               & 0.0383 & 0.876 & 1.10 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Three observations survive the noise:
+Four observations follow (paired win counts and Wilcoxon $p$-values are
+computed over the 12 fold$\times$seed runs, with the same independence caution
+as in Section~\ref{sec:transformer_gap}):
 \begin{enumerate}
-    \item \textbf{The de-confound question is settled on the full protocol, not
-    here.} On the reduced protocol the variant ordering is unstable across
-    initialization streams (route~B has ranged from best to fifth), which is
-    precisely why the matched-capacity control was promoted into the main
-    benchmark: there, with 4 folds $\times$ 3 seeds, the same backbone scores
-    $0.0377$ without physics and $0.0292$ with the ODE residual. Route~B's
-    physical consistency is the most stable reduced-protocol signal (best of
-    all variants here, $0.891$).
-    \item \textbf{Uncertainty weighting shows no reliable benefit over a fixed
-    weight} ($0.0330$ vs.\ $0.0349$ for the same route-A backbone on this run,
-    slightly ahead; earlier runs placed it slightly behind --- the ordering
-    moves within the reduced protocol's noise). The automatic weighting brings
-    no dependable benefit at this data scale, so the fixed weight is used for
-    the main benchmark models.
-    \item \textbf{Route~B costs $\sim$3$\times$ the training time} of the
-    no-physics baseline ($2.4$\,s vs.\ $0.8$\,s here). This cost is paid
-    offline; the deployed inference network is unchanged.
+    \item \textbf{The decomposition adds one nuance to the de-confound story.}
+    The matched-input comparison remains the clean attribution: at identical
+    architecture and inputs, adding the ODE residual moves the control from
+    $0.0377$ to $0.0292$ (11/12 runs, Table~\ref{tab:gap}). The new row is the
+    backbone \emph{without} the cycle coordinate, which scores $0.0312$ ---
+    better than the same backbone with the raw coordinate ($0.0377$; the
+    coordinate helps on only 4 of 12 runs, $p=0.27$). The raw coordinate on
+    its own is therefore mildly harmful to an unconstrained network, and it
+    pays off only once the ODE residual constrains how the network may use
+    it. Against this strongest no-physics variant, route~B keeps a mean
+    advantage ($0.0292$ vs.\ $0.0312$, $-6.6\%$) but wins only 7 of 12 runs
+    ($p=0.47$): part of route~B's margin over the \emph{control} reflects
+    repairing the harm of the raw coordinate, and the like-for-like physics
+    gain is the smaller matched-input number.
+    \item \textbf{Uncertainty weighting: no reliable accuracy benefit, one
+    consistent plausibility gain.} On route~A the learnable weighting changes
+    nothing ($0.0377$ vs.\ $0.0382$, 5/12 runs, $p=0.85$). On route~B it
+    attains the best mean in the table ($0.0259$, $-11.1\%$ against the fixed
+    weight) --- but the mean gap is carried by run-to-run variance (6/12
+    runs, $p=0.62$), the same pattern as the Transformer comparison of
+    Section~\ref{sec:transformer_gap}, so it is not a dependable accuracy
+    gain. What \emph{is} fairly uniform is physical consistency: $0.903$ vs.\
+    $0.884$ on 10 of 12 runs ($p=0.019$, subject to the independence
+    caution). The fixed weight is therefore retained for the headline models,
+    and the uncertainty-weighted route~B --- the best mean and the most
+    physically consistent variant here --- is the natural configuration to
+    validate on a larger fleet (Chapter~\ref{ch:conclusion}).
+    \item \textbf{The two closed-form priors are interchangeable inside
+    route~A} ($0.0382$ vs.\ $0.0383$), even though the double-exponential is
+    clearly the better standalone fit
+    (Section~\ref{sec:physics_interpretability}). Used as a soft penalty, the
+    prior's exact shape matters far less than whether its parameters can
+    adapt --- which is what route~B provides.
+    \item \textbf{Route~B costs roughly $3\times$ the training time} of the
+    no-physics variants ($3$--$4$\,s vs.\ $1.0$--$1.1$\,s per fold; the exact
+    wall-clock values move between runs, the ratio does not). This cost is
+    paid offline; the deployed inference network is unchanged.
 \end{enumerate}
 
 \textbf{Aggregation ablation (feature richness).}
 Table~\ref{tab:aggregation} compares the full 8-feature per-cycle representation
-against a minimal 2-feature set on the same reduced protocol. The difference
-($0.0349$ vs.\ $0.0345$) is within the protocol's noise, and the minimal set
-consists precisely of the two near-proxy features discussed in
+against a minimal 2-feature set on the same full protocol. The minimal set ---
+precisely the two near-proxy features discussed in
 Chapter~\ref{ch:datasets_implementation} (discharge time and mean voltage) ---
-consistent with the feature--label-proximity caution stated there: most of the
-pointwise signal is carried by capacity proxies, and the richer set earns its
-place through the ICA/DVA features' physical interpretability rather than
-through pointwise RMSE. This remains a feature-count surrogate for the
-per-second$\rightarrow$per-cycle trade-off; a within-cycle representation study
-is left as future work.
+scores a \emph{lower} mean RMSE than the full set ($0.0315$ vs.\ $0.0382$).
+This is direct evidence for the feature--label-proximity caution stated there:
+most of the pointwise signal is carried by the capacity proxies, and the
+additional features buy no pointwise accuracy on this data. The richer set
+earns its place through the ICA/DVA features' physical interpretability and
+diagnostic value, not through RMSE. This remains a feature-count surrogate for
+the per-second$\rightarrow$per-cycle trade-off; a within-cycle representation
+study is left as future work.
 
 \begin{table}[H]
 \centering
 \caption{Aggregation ablation (route-A hybrid with double-exponential prior,
-reduced protocol; differences are within noise).}
+full protocol). The minimal set consists of the two near-proxy features.}
 \label{tab:aggregation}
 \begin{tabular}{l c c}
 \toprule
 \textbf{Feature set} & \textbf{SOH RMSE} & \textbf{Phys.Cons.} \\
 \midrule
-Full (8 features)    & 0.0349 & 0.881 \\
-Minimal (2 features) & 0.0345 & 0.916 \\
+Full (8 features)    & 0.0382 & 0.876 \\
+Minimal (2 features) & 0.0315 & 0.896 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \textbf{Data-volume ablation.} Table~\ref{tab:datavolume} subsamples a stratified
 fraction (25\%/50\%/75\%/100\%) of \emph{each} training cell's training windows for the
-route-A hybrid. Because adjacent windows overlap, even a small subsample still
-covers most of each cell's life, so the sweep reduces the number of training
-labels rather than simulating a genuinely shorter measurement record --- a
-second reason (besides the reduced protocol) to read it cautiously. The values sit in a $0.028$--$0.036$ band without a monotonic
-trend; with two folds $\times$ two seeds the comparison is noise-dominated, and
-the only cautious reading is that the hybrid does not collapse at low data
+route-A hybrid, on the full protocol. Because adjacent windows overlap, even a
+small subsample still covers most of each cell's life, so the sweep reduces the
+number of training labels rather than simulating a genuinely shorter
+measurement record --- the reason to read it cautiously. The values sit in a
+$0.034$--$0.039$ band without a monotonic trend; the cautious reading is that
+the hybrid is not data-starved at this scale and does not collapse at low data
 fractions. (An earlier version of this ablation kept the first $k\%$ of the
 concatenated windows, which for small fractions was the early life of a single
 cell; it was corrected to a per-cell stratified subsample so every training cell
@@ -682,16 +732,16 @@ remains represented.)
 \begin{table}[H]
 \centering
 \caption{Data-volume ablation (route-A hybrid, stratified per-cell subsample,
-reduced protocol).}
+full protocol).}
 \label{tab:datavolume}
 \begin{tabular}{l c c}
 \toprule
 \textbf{Training data} & \textbf{SOH RMSE} & \textbf{Phys.Cons.} \\
 \midrule
-25\%  & 0.0276 & 0.881 \\
-50\%  & 0.0317 & 0.884 \\
-75\%  & 0.0363 & 0.882 \\
-100\% & 0.0349 & 0.881 \\
+25\%  & 0.0364 & 0.873 \\
+50\%  & 0.0342 & 0.878 \\
+75\%  & 0.0394 & 0.875 \\
+100\% & 0.0382 & 0.876 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -815,11 +865,9 @@ here rather than left implicit:
     itself is a development-phase artifact (a small TPE study plus the locked
     winning configurations, tuned at hidden size 32; the benchmark hybrids run
     hidden size 64 for headroom) rather than a fully scripted reproduction.
-    Relatedly, the reduced-protocol ablations retain a slightly earlier base
-    configuration (learning rate $0.0018$, physics weight $0.062$) than the
-    benchmark models ($0.002$, $0.1$); since those ablations are read only
-    qualitatively (they are noise-dominated, see below), the discrepancy does
-    not affect any conclusion, but it is recorded here for exactness.
+    The design, aggregation and data-volume ablations share the benchmark
+    configuration exactly (Section~\ref{sec:ablations}), so no configuration
+    discrepancy remains between the two tables.
     \item \textbf{Cross-dataset validation windows.} In the cross-dataset run
     the per-cell chronological train/validation split is made on windowed data,
     so up to $\mathrm{seq\_len}-1$ sliding windows straddle the boundary and
@@ -849,16 +897,15 @@ here rather than left implicit:
     model's PHM average. This affects all models symmetrically but means the PHM
     columns average over slightly different fold subsets. Post-EOL cycles are
     masked (Section~\ref{sec:phm}).
-    \item \textbf{Reduced-protocol ablations.} The 2-fold $\times$ 2-seed
-    ablations are demonstrably noise-dominated (their variant rankings changed
-    across initialization streams while the full benchmark did not); design
-    conclusions are drawn from the full-protocol control row instead.
-    \item \textbf{Ablation input asymmetry.} In the reduced-protocol design
-    ablation the route-A and physics-off variants are trained \emph{without}
-    the shared cycle-coordinate channel (only the route-B and t-channel-control
-    variants carry it), whereas in the main benchmark every learned model
-    receives it. The ablation rows are therefore not directly comparable to the
-    benchmark rows --- one more reason they are read only qualitatively.
+    \item \textbf{Reduced-protocol stress tests.} The data-scarcity and
+    overfitting sweeps of Section~\ref{sec:overfitting} run on a reduced
+    2-fold $\times$ 2-seed protocol and are noise-dominated; they are read as
+    indicative only. The design, aggregation and data-volume ablations were
+    originally run at the same reduced scale --- where their variant rankings
+    proved unstable across initialization streams --- and were re-executed on
+    the full benchmark protocol with symmetric inputs
+    (Section~\ref{sec:ablations}), whose control and route rows anchor to
+    Table~\ref{tab:benchmark}.
     \item \textbf{Window subsampling in the volume sweeps.} The data-volume
     ablation and the data-scarcity stress test subsample training
     \emph{windows}, not contiguous cycles; overlapping windows retain nearly
@@ -905,13 +952,16 @@ The measured evaluation supports the following conclusions:
     route~B sits mid-pack ($\alpha$-$\lambda$ $0.37$, CRA $0.17$). Prognostic
     calibration does not by itself separate the hybrid from all alternatives.
     \item \textbf{Negative results, reported as measured.} Uncertainty
-    weighting shows no reliable benefit over a fixed weight; the
-    reduced-protocol ablations
-    are noise-dominated and their earlier readings are withdrawn in favour of
-    the full-protocol control; route~B degrades out of distribution ($0.2077$)
-    because its cycle coordinate extrapolates beyond the training range; and
-    shrinking to the 11k deployment size costs accuracy
-    ($0.0292 \rightarrow 0.0469$) with high fold-to-fold variance.
+    weighting shows no reliable \emph{accuracy} benefit over a fixed weight on
+    either physics route --- on route~B its better mean ($0.0259$) is carried
+    by run-to-run variance (6/12 runs), while its one fairly uniform effect is
+    a physical-consistency gain ($0.903$, 10/12 runs); the raw cycle
+    coordinate by itself makes the unconstrained backbone \emph{worse}
+    ($0.0312 \rightarrow 0.0377$) and pays off only under the ODE residual;
+    route~B degrades out of distribution ($0.2077$) because its cycle
+    coordinate extrapolates beyond the training range; and shrinking to the
+    11k deployment size costs accuracy ($0.0292 \rightarrow 0.0469$) with high
+    fold-to-fold variance.
     \item \textbf{Deployment.} The deployed 11k hybrid measures $20.2$\,KB of
     int8 flash (2\% of the Cortex-M4 budget) and $1.25$\,KB of RAM, is
     statistically indistinguishable from the Transformers on accuracy, and

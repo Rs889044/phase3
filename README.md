@@ -11,9 +11,13 @@ written companion to that notebook.
 > **Note (2026-07-10).** The NASA charge↔discharge pairing was corrected
 > (the raw `.mat` sequence contains extra/corrupted charge operations that a
 > positional pairing silently absorbed, leaving most ICA features 1–2 cycles
-> stale) and the full pipeline was re-executed. All prose and tables below
-> reflect the post-fix rerun; the executed notebook and its `tables/`/`figures/`
-> outputs remain the authoritative numbers.
+> stale) and the full pipeline was re-executed. A later pass the same day
+> re-ran the design/aggregation/volume ablations on the full benchmark
+> protocol (they were previously 2 folds × 2 seeds); Section 11 reflects the
+> full-protocol run, whose control and route rows reproduce the benchmark
+> rows exactly. All prose and tables below reflect the post-fix rerun; the
+> executed notebook and its `tables/`/`figures/` outputs remain the
+> authoritative numbers.
 
 ---
 
@@ -108,8 +112,9 @@ The pipeline is fully reproducible and seed-controlled. Stages:
 6. **Evaluation.** Leave-one-cell-out (all folds) + cross-dataset transfer, across
    multiple seeds; standard PHM prognostic metrics; significance testing.
 7. **Ablation.** Isolate each design choice (physics route, prior, weighting,
-   feature richness, data volume) — with the decisive de-confound control run on
-   the *full* protocol inside the main benchmark (Section 11).
+   feature richness, data volume) on the same full four-fold protocol as the
+   benchmark; the control and route rows re-run the benchmark configurations
+   exactly, tying the two tables together (Section 11).
 8. **Edge deployment.** Quantize to int8, measure footprint, map to the M4 budget.
 
 **Golden rules enforced throughout:** report only real, measured numbers; never
@@ -152,8 +157,11 @@ height shift measurably with aging (a well-established SOH signature). The noteb
 shows the **dQ/dV peak shrinking and shifting** across the cell's life.
 
 **Discharge / resistance features.** Discharge duration, minimum voltage, mean
-voltage, intra-cycle voltage variance, temperature rise (NASA), and an internal
-resistance value (measured column for CALCE; a |ΔV/ΔI| onset proxy for NASA).
+voltage, intra-cycle voltage variance, and an internal resistance value
+(measured column for CALCE; a |ΔV/ΔI| onset proxy for NASA). A temperature-rise
+summary (NASA) and the ICA peak prominence are also computed per cycle, but as
+diagnostics — the models receive the eight shared features plus the cycle
+coordinate.
 
 Missing values from short/corrupted segments are imputed **within each cell only**
 (forward/back-fill then median) — never across cells — to avoid leakage; a feature
@@ -354,57 +362,74 @@ the cell-level p at 0.125), so every test outcome is reported descriptively.
 
 ## 11. Ablation study
 
-The reduced-protocol ablations (2 folds × 2 seeds) proved **noise-dominated**:
-across otherwise-identical reruns with different initialization streams the
-variant rankings moved substantially, while the full four-fold benchmark stayed
-stable. They are therefore reported for completeness and read only
-qualitatively — **the decisive de-confound evidence is the matched-capacity
-control row inside the full-protocol benchmark** (Section 9): same 41k backbone,
-same time input, physics off → 0.0377; with the ODE residual → 0.0292.
+All three ablations run on the **same full protocol as the benchmark** (4 folds
+× 3 seeds, benchmark configuration, shared cycle-coordinate channel for every
+variant except the explicit "no t" row). The design table is anchored to the
+benchmark: its control, route-A and route-B rows re-run the exact benchmark
+configurations and reproduce those rows to the fourth decimal. (The original
+reduced-protocol ablations — 2 folds × 2 seeds — proved noise-dominated across
+reruns and were re-executed at full scale; only the data-scarcity stress test
+below remains reduced-protocol and indicative.)
 
-### Design ablation (reduced protocol; indicative only)
+### Design ablation (full protocol)
 
 | Variant | SOH RMSE | Phys. cons. | Train time (s) |
 |---|---|---|---|
-| Route A · uncertainty weighting | 0.0330 | 0.879 | 1.33 |
-| Physics OFF (no t, no physics) | 0.0340 | 0.880 | 0.84 |
-| Route A · double-exp | 0.0349 | 0.881 | 1.40 |
-| Route A · logistic | 0.0351 | 0.881 | 1.23 |
-| Route B · ODE-residual (t + physics) | 0.0392 | **0.891** | 2.40 |
-| Physics OFF + t-channel (control) | 0.0431 | 0.881 | 2.18 |
+| Route B · uncertainty weighting | **0.0259** | **0.903** | 3.33 |
+| Route B · ODE-residual | 0.0292 | 0.884 | 3.89 |
+| Physics OFF (no t) | 0.0312 | 0.879 | 0.97 |
+| Physics OFF + t-channel (control) | 0.0377 | 0.879 | 1.13 |
+| Route A · uncertainty weighting | 0.0377 | 0.881 | 1.28 |
+| Route A · double-exp | 0.0382 | 0.876 | 1.24 |
+| Route A · logistic | 0.0383 | 0.876 | 1.10 |
 
-Route B's physical consistency is the most stable reduced-protocol signal (best
-of all variants); its RMSE ranking here moves with the noise, which is precisely
-why the de-confound control was promoted onto the full protocol. Route B costs
-~3× the training time of the no-physics baseline — paid offline; the deployed
-inference network is unchanged. Two disclosed protocol notes: in this ablation
-the route-A and physics-off variants run *without* the shared cycle-coordinate
-channel (unlike the main benchmark), and the volume sweeps below subsample
-overlapping *windows*, not contiguous cycles — both further reasons to read the
-tables qualitatively.
+(The metric columns are deterministic across reruns; the train-time column is
+wall-clock per fold and varies between runs — the ~3× route-B ratio is the
+stable quantity.)
+
+What the decomposition says (paired win counts over the 12 fold×seed runs,
+read with the same independence caution as the benchmark):
+
+- **The raw cycle coordinate alone is mildly harmful.** The backbone scores
+  0.0312 without it and 0.0377 with it (better with it on only 4/12 runs,
+  p = 0.27); it pays off only once the ODE residual constrains how the network
+  may use it. The clean physics attribution remains the matched-input
+  comparison (0.0377 → 0.0292, 11/12 runs, p = 0.021); against the stronger
+  no-t backbone, route B keeps a mean advantage (−6.6 %) without run-level
+  dominance (7/12, p = 0.47).
+- **Loss weighting (refined negative).** Uncertainty weighting has no accuracy
+  effect on route A (0.0377 vs 0.0382, 5/12 runs, p = 0.85). On route B it
+  posts the best mean in the table (0.0259, −11.1 %) — but the mean gap is
+  carried by run-to-run variance (6/12 runs, p = 0.62), so it is not a
+  dependable accuracy gain. Its one fairly uniform effect is physical
+  consistency on route B (0.903 vs 0.884, 10/12 runs, p = 0.019). The fixed
+  weight stays in the headline models; the uncertainty-weighted route B is the
+  natural configuration to validate on a larger fleet.
+- **The two closed-form priors are interchangeable inside route A** (0.0382 vs
+  0.0383): as a soft penalty, the prior's exact shape matters far less than
+  whether its parameters can adapt (route B).
+- **Route B costs ~3× the training time** of the no-physics baseline — paid
+  offline; the deployed inference network is unchanged.
 
 ### Other ablations
 
-- **Loss weighting (honest negative).** Homoscedastic uncertainty weighting shows
-  **no reliable benefit** over a well-chosen fixed weight: its ordering against
-  the fixed weight flips between reruns within the reduced protocol's noise
-  (slightly ahead on this run, slightly behind on earlier ones). The fixed weight
-  is used for the headline models.
-- **Feature richness (aggregation).** The full 8-feature set (0.0349) and a
-  minimal two-feature set (0.0345) are indistinguishable — and the minimal set is
-  precisely the two near-proxy features (discharge time, mean voltage), consistent
-  with the feature–label-proximity caution of Section 5. The richer set earns its
-  place through the ICA features' physical interpretability, not pointwise RMSE.
-  (This is a feature-count surrogate for the per-second→per-cycle information
-  trade-off, not a literal within-cycle study.)
+- **Feature richness (aggregation).** On the full protocol the minimal
+  two-feature set — precisely the two near-proxy features (discharge time,
+  mean voltage) — scores a *lower* mean RMSE than the full 8-feature set
+  (0.0315 vs 0.0382): direct evidence for the feature–label-proximity caution
+  of Section 5. The richer set earns its place through the ICA features'
+  physical interpretability, not pointwise RMSE. (This is a feature-count
+  surrogate for the per-second→per-cycle information trade-off, not a literal
+  within-cycle study.)
 - **Data volume.** Subsampling 25–100 % of each training cell's windows shows
-  **no clean trend** (0.028–0.036 band): on this small, clean dataset the model
+  **no clean trend** (0.034–0.039 band): on this small, clean dataset the model
   is **not data-starved**. Overlapping windows retain nearly full life coverage
   at low fractions, so this understates the difficulty of a genuinely shorter
   record.
-- **Data scarcity vs the Transformers (10–100 %).** Also noise-dominated at this
-  protocol; the dependable capacity conclusion is the full-benchmark one
-  (Section 9): 13× more attention parameters buy no reliable accuracy return.
+- **Data scarcity vs the Transformers (10–100 %).** Still on the reduced
+  protocol and noise-dominated; the dependable capacity conclusion is the
+  full-benchmark one (Section 9): 13× more attention parameters buy no
+  reliable accuracy return.
 
 ---
 
@@ -471,11 +496,16 @@ should deploy that model instead.
    reflects the Transformer's variance), while its physical-consistency edge holds
    on every run — claim "significantly more plausible," not "significantly more
    accurate."
-6. **Negative results are reported with mechanisms:** uncertainty weighting brings
-   no reliable benefit; route B fails out of distribution (0.2077) because its
-   cycle coordinate extrapolates beyond the training range; and shrinking to the
-   11k deployment size costs accuracy (0.0469 ± 0.0217) — the deployed model's
-   case is plausibility per kilobyte, within 2 % of the M4 flash budget.
+6. **Negative results are reported with mechanisms:** uncertainty weighting
+   brings no reliable *accuracy* benefit on either route (on route B its better
+   mean, 0.0259, is carried by run-to-run variance — 6/12 runs — while its one
+   uniform effect is a physical-consistency gain, 0.903 on 10/12 runs); the raw
+   cycle coordinate alone makes the unconstrained backbone worse
+   (0.0312 → 0.0377) and pays off only under the ODE residual; route B fails
+   out of distribution (0.2077) because its cycle coordinate extrapolates
+   beyond the training range; and shrinking to the 11k deployment size costs
+   accuracy (0.0469 ± 0.0217) — the deployed model's case is plausibility per
+   kilobyte, within 2 % of the M4 flash budget.
 
 ---
 
@@ -541,8 +571,10 @@ should deploy that model instead.
    rebuilds everything from the raw measurements, and renders every figure, table,
    and result inline. The outputs are also pre-executed and embedded, so the
    notebook can be read without running it.
-4. A full run trains many small models on CPU and takes roughly 45–60 minutes
-   (the heavy 225k-parameter Transformer dominates the wall time). A much faster
+4. A full run trains many small models on CPU; the two most recent full runs
+   measured 20–22 minutes on an 8-core Apple-silicon laptop (the heavy
+   225k-parameter Transformer and the full-protocol ablations dominate the
+   wall time; budget up to ~an hour on older hardware). A much faster
    single-seed quick mode is available via one flag in the setup cell; the
    canonical multi-seed numbers are printed alongside as a reference regardless
    of mode.

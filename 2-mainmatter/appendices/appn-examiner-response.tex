@@ -176,8 +176,11 @@ redundancy and potential for simpler solutions.''}\\
 \textbf{Response:} The redundancy question was answered empirically with an
 information-criterion analysis: the double-exponential attains a lower AIC than
 the logistic on all five cells, so the two-timescale law is retained as the
-primary prior and the logistic as an alternative configuration; the design
-ablation confirms the same ordering when the priors are used inside the hybrid.
+primary prior and the logistic as an alternative configuration. The
+full-protocol design ablation adds a complementary finding: used as soft
+penalties inside the hybrid, the two priors perform near-identically --- the
+decisive factor is not the prior's exact shape but whether its parameters are
+learnable (route~B).
 \textbf{Integration:} Section~\ref{sec:physics_interpretability},
 Table~\ref{tab:prior_fits} and Figure~\ref{fig:redundancy}; ablation in
 Table~\ref{tab:ablation} (Chapter~\ref{ch:results}).
@@ -189,9 +192,12 @@ weighting of data and physical loss.''}\\
 ``Bayesian'' that were conflated earlier: Optuna's Tree-structured Parzen
 Estimator for hyperparameter search, and the Bayesian (maximum-likelihood)
 interpretation of homoscedastic uncertainty weighting for the data/physics loss
-balance. The uncertainty weighting was then tested empirically against a fixed
-weight; it did not improve on the fixed weight on this dataset, and this
-negative result is reported and the fixed weight adopted.
+balance. The uncertainty weighting was then tested against a fixed weight on the full
+benchmark protocol: it brings no reliable accuracy gain on either physics
+route (on route~B its better mean is carried by run-to-run variance, 6 of 12
+runs), with one consistent side effect --- a physical-consistency gain on
+route~B. The comparison is reported in both directions and the fixed weight
+is adopted for the headline models.
 \textbf{Integration:} Sections~\ref{sec:uncertainty_weighting}--\ref{sec:two_routes}
 (Chapter~\ref{ch:methodology}),
 Table~\ref{tab:ablation} and Section~\ref{sec:ablations}
