@@ -19,9 +19,10 @@ The problem is modeled as a supervised time-series regression task. Let $\mathbf
 
 Where $\mathbf{X}_{k-T:k}$ represents the input tensor of historical data, $\theta$ represents the trainable parameters of the neural network (GRU), and $\hat{y}_k$ is the predicted SOH.
 
-\textbf{End-of-Life (EOL) Definition:} End-of-Life (EOL) is defined as the first cycle index where $SOH \leq SOH_{EOL}$ \emph{and the condition persists for at least 5 consecutive cycles} (this persistence rule prevents a transient noisy reference cycle or a regeneration dip from triggering a false EOL). The primary threshold is $SOH_{EOL} = 80\%$ for both datasets (matching common automotive practice), with $70\%$ carried as a secondary threshold for the longer-lived CALCE cell. Both datasets are LCO, so the threshold choice reflects the application rather than a chemistry difference. All RUL calculations explicitly document the EOL threshold used.
+\textbf{End-of-Life (EOL) Definition:} End-of-Life (EOL) is defined as the first cycle index where $SOH \leq SOH_{EOL}$ \emph{and the condition persists for at least 5 consecutive cycles} (this persistence rule prevents a transient noisy reference cycle or a regeneration dip from triggering a false EOL). The primary threshold is $SOH_{EOL} = 80\%$ for both datasets (matching common automotive practice); a $70\%$ threshold is sometimes adopted for less demanding second-life applications, but all results in this thesis use the $80\%$ threshold. Both datasets are LCO, so the threshold choice reflects the application rather than a chemistry difference. All RUL calculations explicitly document the EOL threshold used.
 
 \section{Physics Formulation (The Regularizer)}
+\label{sec:physics_formulation}
 
 To ensure the neural network adheres to physical laws, we introduce a regularization term based on empirical degradation physics. We employ two candidate Ordinary Differential Equations (ODEs) as the governing physical laws. These ODEs act as ``soft constraints'' on the loss function.
 
@@ -36,7 +37,7 @@ The Verhulst model describes a system whose growth (or decay) is self-limiting. 
 Where:
 \begin{itemize}
     \item $r$: The intrinsic rate constant. With $r>0$ the logistic law describes saturating growth toward $K$; fitted to a \emph{decaying} SOH trajectory (or when learned jointly with the network, Chapter~\ref{ch:results}), $r$ takes a negative sign and the same law describes monotone fade.
-    \item $K$: The carrying capacity --- the asymptotic plateau of the S-curve. Because SOH is normalized by \emph{rated} capacity, fitted values of $K$ may exceed $1.0$ for cells whose measured initial capacity is above rating (as observed for the NASA cells in Chapter~\ref{ch:results}).
+    \item $K$: The carrying capacity. For $r>0$ it is the asymptotic plateau of the S-curve; fitted with $r<0$ to a \emph{decaying} SOH trajectory (the case throughout Chapter~\ref{ch:results}), the closed-form curve $K/(1+A e^{-rt})$ instead decays from its starting value $K/(1+A)$ toward zero, so $K$ acts as a scale parameter of the fitted curve rather than an asymptote the trajectory approaches. Because SOH is normalized by \emph{rated} capacity, fitted values of $K$ may exceed $1.0$ for cells whose measured initial capacity is above rating (as observed for the NASA cells in Chapter~\ref{ch:results}).
 \end{itemize}
 
 This model enforces a specific trajectory shape: an initial slow fade, a near-linear phase, and a saturation phase. By constraining the network's time-derivative to this law, we discourage non-physical predictions such as sustained capacity recovery ($\frac{dSOH}{dt} > 0$), which would violate the monotonic degradation logic inherent to thermodynamic aging \cite{ref1_general}.
@@ -54,6 +55,13 @@ To capture more complex degradation dynamics, particularly the ``knee-point'' wh
     \item \textbf{Term 2 ($c \cdot e^{d \cdot t}$):} Represents the slow decay process, dominated by the long-term Loss of Active Material (LAM).
 \end{itemize}
 
+This mechanistic reading motivates the functional form but is not imposed on
+the least-squares fit: the coefficients are left unconstrained, and, as noted
+in Chapter~\ref{ch:results}, the fitted amplitudes and exponents do not always
+take the signs of two decay processes. The double-exponential is therefore
+used as a flexible empirical prior whose \emph{form} is physically motivated,
+rather than as a literal decomposition into SEI and LAM contributions.
+
 For the PINN framework, we differentiate this equation to obtain the rate of change constraint:
 
 \begin{equation}
@@ -65,11 +73,13 @@ This model offers greater flexibility than the Verhulst model, allowing the netw
 \textbf{Soft Constraints \& Handling Regeneration:} The ODE priors (Verhulst, Double-Exponential) are implemented as soft regularizers rather than hard constraints. The uncertainty-weighted loss allows the training procedure to attenuate the influence of the physics loss when transient phenomena (e.g., capacity regeneration in NASA data) cannot be explained by the ODE prior. This avoids forced suppression of legitimate data observations while still guiding the model toward physically plausible trends.
 
 \section{The Optimization Objective}
+\label{sec:optimization_objective}
 
 The core innovation of this framework lies in the composite loss function. Unlike traditional deep learning, which minimizes only the error between prediction and ground truth, our framework minimizes a joint objective. This composite loss function ensures the model fits the data while respecting the physical laws governing battery aging.
 
 \begin{equation}
     \mathcal{L}_{total} = \lambda_{data}\mathcal{L}_{data} + \lambda_{phys}\mathcal{L}_{phys}
+    \label{eq:composite_loss}
 \end{equation}
 
 
@@ -89,4 +99,4 @@ The ODE parameters $\theta_{phys}$ admit two treatments, and the framework imple
 
 \par\medskip
 \noindent \textbf{Note on Implementation Strategy:} 
-Equation (3.6) represents the canonical form of a multi-objective physics-informed loss function, where the balance between data fidelity and physical consistency is controlled by static scalar weights ($\lambda_{data}, \lambda_{phys}$). Determining suitable values for these weights is non-trivial. Chapter 4 (Section 4.3) therefore develops, in addition to the fixed-weight form above, a probabilistic alternative in which the static hyperparameters $\lambda$ are replaced by learnable uncertainty terms ($\sigma$) intended to adapt the balance automatically. Both weighting schemes are evaluated empirically in Chapter~\ref{ch:results}; on the datasets studied there, a well-chosen fixed weight proved the better default, and it is used for the main benchmark models.
+Equation~(\ref{eq:composite_loss}) represents the canonical form of a multi-objective physics-informed loss function, where the balance between data fidelity and physical consistency is controlled by static scalar weights ($\lambda_{data}, \lambda_{phys}$). Determining suitable values for these weights is non-trivial. Chapter~\ref{ch:methodology} (Section~\ref{sec:uncertainty_weighting}) therefore develops, in addition to the fixed-weight form above, a probabilistic alternative in which the static hyperparameters $\lambda$ are replaced by learnable uncertainty terms ($\sigma$) intended to adapt the balance automatically. Both weighting schemes are evaluated empirically in Chapter~\ref{ch:results}; on the datasets studied there, a well-chosen fixed weight proved the better default, and it is used for the main benchmark models.

@@ -55,8 +55,10 @@ loss. The GRU section gives the full gate equations and the reasons for
 choosing a GRU over an LSTM and a Transformer. Every preprocessing step
 (Savitzky--Golay smoothing before ICA differentiation, per-cell imputation,
 train-only MinMax scaling, windowing) is motivated where it is introduced.
-\textbf{Integration:} Chapter~\ref{ch:problem} (Sections 3.2--3.3),
-Chapter~\ref{ch:methodology} (Sections 4.1--4.2),
+\textbf{Integration:} Chapter~\ref{ch:problem}
+(Sections~\ref{sec:physics_formulation}--\ref{sec:optimization_objective}),
+Chapter~\ref{ch:methodology}
+(Sections~\ref{sec:system_architecture}--\ref{sec:gru_component}),
 Chapter~\ref{ch:datasets_implementation}
 (Section~\ref{subsec:technical_breakdown}).
 
@@ -190,7 +192,8 @@ interpretation of homoscedastic uncertainty weighting for the data/physics loss
 balance. The uncertainty weighting was then tested empirically against a fixed
 weight; it did not improve on the fixed weight on this dataset, and this
 negative result is reported and the fixed weight adopted.
-\textbf{Integration:} Sections 4.3--4.4 (Chapter~\ref{ch:methodology}),
+\textbf{Integration:} Sections~\ref{sec:uncertainty_weighting}--\ref{sec:two_routes}
+(Chapter~\ref{ch:methodology}),
 Table~\ref{tab:ablation} and Section~\ref{sec:ablations}
 (Chapter~\ref{ch:results}).
 
@@ -216,7 +219,7 @@ flash than the high-capacity Transformer (611~KB) and $3.5\times$ less than the
 edge-sized one (70~KB) --- with per-model MAC counts and an analytic latency
 estimate labeled as such. A quantized ONNX export of the deployed model
 accompanies the code.
-\textbf{Integration:} Section 5.4
+\textbf{Integration:} Section~\ref{sec:resource_feasibility}
 (Chapter~\ref{ch:datasets_implementation}), Section~\ref{sec:footprint} and
 Table~\ref{tab:footprint} (Chapter~\ref{ch:results}).
 
@@ -230,7 +233,8 @@ normalization and why the learned rate constant is negative), the soft-penalty
 role of the ODE in the loss, and the exact derivative the implementation
 computes. Chapter~\ref{ch:methodology} defines how the ODE enters each of the
 two physics routes.
-\textbf{Integration:} Chapter~\ref{ch:problem} (Sections 3.2--3.3),
+\textbf{Integration:} Chapter~\ref{ch:problem}
+(Sections~\ref{sec:physics_formulation}--\ref{sec:optimization_objective}),
 Section~\ref{sec:two_routes} (Chapter~\ref{ch:methodology}).
 
 \section*{Summary}

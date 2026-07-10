@@ -1,4 +1,4 @@
-,Hybrid (route A),Transformer (heavy),Transformer (light)
+data %,Hybrid (route A),Transformer (heavy),Transformer (light)
 10%,0.0424,0.0359,0.0476
 25%,0.0395,0.0451,0.0409
 50%,0.037,0.0361,0.0362

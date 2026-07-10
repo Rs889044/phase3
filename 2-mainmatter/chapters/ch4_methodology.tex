@@ -4,6 +4,7 @@
 This section outlines the system architecture, the deep learning components, and the advanced loss balancing strategy.
 
 \section{System Architecture}
+\label{sec:system_architecture}
 
 The proposed Hybrid Physics-Informed Deep Learning Framework operates as a sequential pipeline. The architecture is composed of the following distinct modules:
 
@@ -33,6 +34,7 @@ The proposed Hybrid Physics-Informed Deep Learning Framework operates as a seque
     \label{fig:system_arch}
 \end{figure}
 \section{Deep Learning Component: Gated Recurrent Unit (GRU)}
+\label{sec:gru_component}
 
 The choice of the Gated Recurrent Unit (GRU) is driven by the project's requirement for computational feasibility on standard resources. While LSTMs are powerful, they possess three gates (input, forget, output), leading to a higher parameter count. GRUs simplify this to two gates (update and reset) without sacrificing the ability to capture long-term dependencies. The mathematical formulation of the GRU cell used in this framework is:
 
@@ -67,6 +69,7 @@ This efficient architecture ($O(L)$ complexity) makes it superior to Transformer
 \textbf{Implementation Notes:} The GRU hidden size (32--64) and sequence length (8--15 cycles) were selected by Optuna Bayesian (TPE) hyperparameter optimization. Parameter counts range from $\approx$4k (vanilla GRU) to $\approx$41k (the hidden-64 benchmark hybrid), with the deployed matched-size hybrid at $\approx$11k --- all well under a 1~MB footprint (see Chapter~\ref{ch:results}, Section~\ref{sec:footprint}).
 
 \section{Adaptive Loss Balancing (Uncertainty Weighting)}
+\label{sec:uncertainty_weighting}
 
 A major challenge in training hybrid models is determining the optimal values for the hyperparameters $\lambda_{data}$ and $\lambda_{phys}$. If $\lambda_{phys}$ is set too high, the model becomes overly rigid and ignores the nuances of the data. If set too low, the physical constraint is ineffective. Manual tuning of these weights is time-consuming and often suboptimal.
 
@@ -105,7 +108,7 @@ implementations, and rather than assume one is best, the framework implements
 \end{itemize}
 
 Similarly, the loss balance is evaluated under both a \textbf{fixed weight} and the
-\textbf{homoscedastic uncertainty weighting} of Section~4.3. The hyperparameters
+\textbf{homoscedastic uncertainty weighting} of Section~\ref{sec:uncertainty_weighting}. The hyperparameters
 (hidden size, sequence length, learning rate, physics weight) are selected by
 \textbf{Optuna} Bayesian (TPE) optimization, which is distinct from the Bayesian
 \emph{interpretation} of the uncertainty-weighted loss. Chapter~\ref{ch:results}

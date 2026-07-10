@@ -5,7 +5,7 @@ Understanding the data is a prerequisite for successful modeling. This chapter a
 
 \section{Dataset Suitability and Defense}
 
-To address the query about data set sufficiency, the project utilizes two of the most cited and rigorous datasets in the battery domain. Their specific characteristics, artifacts and strategic roles in this research are detailed in Table \ref{tab:datasets} below.
+To address the query about data set sufficiency, the project uses two of the most widely cited datasets in the battery domain. Their specific characteristics, artifacts and strategic roles in this research are detailed in Table \ref{tab:datasets} below.
 
 % --- TABLE 5.1: DATASET SPECIFICATIONS ---
 \begin{table}[H]
@@ -296,12 +296,16 @@ To ensure rigorous testing, distinct splitting strategies are employed for the s
 \end{itemize}
 
 \subsubsection{Evaluation Metrics}
-The predictive performance is quantified using standard regression metrics. For a given cycle $t$:
+The predictive performance is quantified using standard regression metrics:
 \begin{align}
 \text{MAE}_{SOH} &= \frac{1}{N} \sum_{i=1}^{N} |\widehat{\text{SOH}}_i - \text{SOH}_i|, \\
-\text{RMSE}_{SOH} &= \sqrt{ \frac{1}{N} \sum_{i=1}^{N} (\widehat{\text{SOH}}_i - \text{SOH}_i)^2 }, \\
-\text{MAE}_{RUL} &= |\widehat{\text{RUL}} - \text{RUL}|.
+\text{RMSE}_{SOH} &= \sqrt{ \frac{1}{N} \sum_{i=1}^{N} (\widehat{\text{SOH}}_i - \text{SOH}_i)^2 }.
 \end{align}
+RUL accuracy is assessed with the prognostic (PHM) metrics of
+Chapter~\ref{ch:results} (Section~\ref{sec:phm}) --- the $\alpha$-$\lambda$
+accuracy and Cumulative Relative Accuracy --- rather than a single pointwise
+RUL error, since a lone terminal error hides how the horizon estimate evolves
+over the cell's life.
 
 \noindent
 \textbf{Physical Consistency Metric:} To quantify the "physics-informed" advantage, we define a \textbf{Physical Consistency Score (PCS)} which measures the percentage of predictions that respect the monotonic degradation constraint ($d\text{SOH}/dt \le 0$) inherent to battery thermodynamics:
@@ -315,7 +319,7 @@ To ensure scientific rigor, the following protocols are used:
 \begin{itemize}
     \item \textbf{Uncertainty Quantification:} Performance is reported as mean $\pm$ 95\% confidence intervals ($1.96\times$ the standard error over folds$\times$seeds).
     \item \textbf{Hypothesis Testing:} Model comparisons use the paired Wilcoxon signed-rank test. Because seeds within a fold share the same test cell, and only four independent cells exist, test outcomes are reported descriptively (fold-level win counts) rather than as strict significance claims (Chapter~\ref{ch:results}).
-    \item \textbf{Data Efficiency Study:} the hybrid is compared against the standard baselines on reduced training subsets (25\%, 50\%, 75\%, 100\% of training cycles) to quantify the regularization benefit in data-sparse regimes (results in Chapter~\ref{ch:results}, Section~\ref{sec:ablations}).
+    \item \textbf{Data Efficiency Study:} behaviour in data-sparse regimes is probed by two training-set-reduction studies: a data-volume ablation on the hybrid (25\%--100\% of the training windows) and a data-scarcity stress test against both Transformer scales (10\%--100\%); results in Chapter~\ref{ch:results}, Sections~\ref{sec:overfitting} and~\ref{sec:ablations}.
 \end{itemize}
 
 \section{Benchmarking Baselines}
@@ -361,6 +365,7 @@ AI component to be justified.
 \noindent \textbf{Sufficiency of Data Volume:} While deep learning approaches typically require massive labeled datasets to generalize, \textbf{Physics-Informed models are hypothesized to be data-efficient}: the integration of physical equations constrains the optimization search space, guiding the model even when data is sparse. Rather than assume this, the thesis tests it directly --- via a data-volume ablation on the hybrid and a data-scarcity stress test pitting the hybrid against both Transformer scales at 10--100\% of the training cycles (Chapter~\ref{ch:results}, Sections~\ref{sec:overfitting} and~\ref{sec:ablations}). The combined cycle count of the NASA and CALCE datasets is sufficient for this hypothesis test precisely because the small-data regime is the regime of interest.
 
 \section{Resource Feasibility}
+\label{sec:resource_feasibility}
 
 The proposed ``ODE-regularized'' GRU is computationally lightweight. Unlike
 PDE-based PINNs which require solving complex spatial grids ($10^5+$ operations),

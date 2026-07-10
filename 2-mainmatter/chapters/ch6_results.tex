@@ -73,9 +73,11 @@ fits are used later in the chapter.
 \begin{table}[H]
 \centering
 \caption{Closed-form degradation priors fit per cell (real, measured). The
-logistic carrying capacity $K$ is cell-specific and exceeds $1.0$ for the NASA
-cells, consistent with the $>$100\% initial SOH allowed by the
-$\mathrm{SOH}=Q/Q_\mathrm{rated}$ convention.}
+logistic $K$ is cell-specific and exceeds $1.0$ for the NASA cells; since every
+fit converged to a negative rate constant, the curve decays from its starting
+value $K/(1+A)$ toward zero, so $K$ is a scale parameter of the fitted decay
+rather than an asymptotic plateau (Chapter~\ref{ch:problem},
+Section~\ref{sec:physics_formulation}).}
 \label{tab:prior_fits}
 \small
 \begin{tabular}{l c c c c}
@@ -91,14 +93,21 @@ CS2\_35 & 0.931 & 0.963 & 0.975 & $-346.7$ \\
 \end{tabular}
 \end{table}
 
-\textbf{(1) The two-timescale prior is justified.} The double-exponential model
+\textbf{(1) The double-exponential prior earns its extra parameter.} The double-exponential model
 achieves a lower AIC than the logistic on \emph{every} cell ($\Delta\mathrm{AIC}$
 from $-86$ to $-347$, always favouring double-exp), with a higher $R^2$ and a
 smaller residual spread on each cell (Figure~\ref{fig:redundancy}). This answers
-the redundancy question between the two priors: the two-timescale decay (fast SEI
-stabilization plus slow active-material loss) describes the data better than the
-single logistic S-curve, so the double-exponential is retained as the primary
-closed-form prior and the logistic as an alternative configuration.
+the redundancy question between the two priors: the more flexible
+double-exponential describes the data better than the single logistic S-curve,
+so it is retained as the primary closed-form prior and the logistic as an
+alternative configuration. One caution accompanies this reading: the
+unconstrained fits do not always assign the mechanistically expected signs ---
+on B0005 the fast-term amplitude is negative, on B0006 the second exponent is
+positive (a growing term), and on two cells an exponent rests at the optimizer
+bound --- so the AIC preference is evidence that the four-parameter
+\emph{shape} fits better, not a confirmation of the SEI/LAM decomposition
+itself (the caveat stated in Chapter~\ref{ch:problem},
+Section~\ref{sec:physics_formulation}).
 
 \begin{figure}[H]
     \centering
@@ -136,7 +145,15 @@ are taken from the best-validation checkpoint, saved together with the network
 weights). With a negative rate constant the logistic law becomes a decay law:
 for $\mathrm{SOH} < K$ the learned dynamics give $d\mathrm{SOH}/dt<0$, i.e.\ a
 monotone fade whose rate adapts to the training distribution instead of
-following a fixed shape. These two learned scalars can be inspected directly, so
+following a fixed shape. One boundary of this reading is stated for
+completeness: for SOH \emph{above} the learned $K$ --- which includes much of
+the observed early life, since the NASA cells start at SOH $0.93$--$1.02$ ---
+the same law yields a small positive drift (about $2\times10^{-4}$ SOH per
+cycle at SOH $=1.0$), so strictly the learned prior exerts a weak flattening
+pressure early in life and a decay pressure once SOH falls below $K$. Because
+the residual is a soft penalty this nuance has little practical effect on the
+trained model, but the monotone-fade interpretation holds exactly only below
+$K$. These two learned scalars can be inspected directly, so
 the interpretability benefit of the physics prior is retained even though its
 parameters are learned.
 
@@ -466,7 +483,7 @@ which masked exactly this failure; the corrected protocol exposes it.) A
 further caution applies to all models in this transfer: the feature scaler is
 fit on NASA, so several CALCE features fall outside the $[0,1]$ training range
 (the \texttt{ir\_proxy\_ohm} column even changes physical meaning across
-datasets, Section~5.1.1), and cross-dataset differences therefore mix model
+datasets, Section~\ref{subsec:technical_breakdown}), and cross-dataset differences therefore mix model
 robustness with feature-shift severity. Two mitigations are identified for
 future work: saturating the coordinate at the training maximum, and running the
 deployed zeroed-coordinate path (which the footprint profiling already uses)
@@ -481,7 +498,14 @@ Beyond pointwise SOH error, the models were assessed with standard Prognostics a
 Health Management metrics: the $\alpha$-$\lambda$ accuracy (fraction of the
 evaluated life within a $\pm20\%$ cone of true RUL) and Cumulative Relative
 Accuracy (CRA). RUL is derived from the predicted SOH trajectory and the EOL
-threshold (standard PHM practice), not a separate regressor. Two protocol notes
+threshold (standard PHM practice), not a separate regressor. One property of
+this construction is stated explicitly: the RUL value assigned at cycle $k$ is
+computed from the model's full predicted SOH trajectory, whose later portion
+requires features measured \emph{after} cycle $k$. The assessment is therefore
+a retrospective evaluation of how well each model's estimated trajectory dates
+end-of-life, applied identically to every model --- not a true online forecast
+issued at cycle $k$, which would additionally require extrapolating the
+feature stream. Two protocol notes
 are essential. First, cycles after end-of-life are \emph{masked} rather than
 scored: an earlier version counted the trivial post-EOL region (where true and
 predicted RUL are both zero) as hits, which inflated $\alpha$-$\lambda$; the
@@ -643,8 +667,11 @@ Minimal (2 features) & 0.0345 & 0.916 \\
 \end{table}
 
 \textbf{Data-volume ablation.} Table~\ref{tab:datavolume} subsamples a stratified
-fraction (25\%/50\%/75\%/100\%) of \emph{each} training cell's cycles for the
-route-A hybrid. The values sit in a $0.028$--$0.036$ band without a monotonic
+fraction (25\%/50\%/75\%/100\%) of \emph{each} training cell's training windows for the
+route-A hybrid. Because adjacent windows overlap, even a small subsample still
+covers most of each cell's life, so the sweep reduces the number of training
+labels rather than simulating a genuinely shorter measurement record --- a
+second reason (besides the reduced protocol) to read it cautiously. The values sit in a $0.028$--$0.036$ band without a monotonic
 trend; with two folds $\times$ two seeds the comparison is noise-dominated, and
 the only cautious reading is that the hybrid does not collapse at low data
 fractions. (An earlier version of this ablation kept the first $k\%$ of the
@@ -826,6 +853,22 @@ here rather than left implicit:
     ablations are demonstrably noise-dominated (their variant rankings changed
     across initialization streams while the full benchmark did not); design
     conclusions are drawn from the full-protocol control row instead.
+    \item \textbf{Ablation input asymmetry.} In the reduced-protocol design
+    ablation the route-A and physics-off variants are trained \emph{without}
+    the shared cycle-coordinate channel (only the route-B and t-channel-control
+    variants carry it), whereas in the main benchmark every learned model
+    receives it. The ablation rows are therefore not directly comparable to the
+    benchmark rows --- one more reason they are read only qualitatively.
+    \item \textbf{Window subsampling in the volume sweeps.} The data-volume
+    ablation and the data-scarcity stress test subsample training
+    \emph{windows}, not contiguous cycles; overlapping windows retain nearly
+    full life coverage at low fractions, so these sweeps understate the
+    difficulty of a genuinely shorter measurement record.
+    \item \textbf{Retrospective RUL evaluation.} As stated in
+    Section~\ref{sec:phm}, the PHM metrics score RUL curves derived from each
+    model's full predicted SOH trajectory; they measure how well the estimated
+    trajectory dates end-of-life in hindsight, not the accuracy of an online
+    forecast issued mid-life.
 \end{itemize}
 
 \section{Summary of Findings}

@@ -1,15 +1,15 @@
 \chapter{Literature Review}
 \label{ch:literature}
 
-The field of battery prognostics is rapidly evolving, characterized by a transition from empirical correlations to sophisticated AI-driven frameworks. This chapter reviews key contributions to the field, categorizing them into three dominant paradigms: Model-Based, Data-Driven, and Hybrid approaches. The review critically analyzes the strengths and limitations of each paradigm to contextualize the proposed hybrid framework and defend the methodological choices made for this thesis.
+Battery prognostics has moved steadily from empirical correlations toward learning-based frameworks. This chapter reviews key contributions to the field, categorizing them into three dominant paradigms: Model-Based, Data-Driven, and Hybrid approaches. The review critically analyzes the strengths and limitations of each paradigm to contextualize the proposed hybrid framework and defend the methodological choices made for this thesis.
 
-\section{Model-Based Approaches: The Foundation of Interpretability}
+\section{Model-Based Approaches}
 
 Model-based approaches are grounded in the explicit mathematical description of battery behavior. They are historically significant as they provide deep insights into the internal states of the cell.
 
 \subsection{Electrochemical Models (White-Box)}
 
-The gold standard for physical fidelity is the electrochemical model, often described by the \textbf{Doyle-Fuller-Newman (DFN)} framework or the \textbf{Single Particle Model (SPM)}. These models utilize coupled Partial Differential Equations (PDEs) to describe lithium-ion concentration gradients, potential distributions, and electrolyte dynamics. Naseri et al. \cite{naseri_efficient} and Xue et al. \cite{wang_pinn} demonstrated that these models can achieve high prognostic accuracy by simulating the growth of the SEI layer. They provide a transparent view of internal degradation, allowing engineers to pinpoint whether capacity fade is due to anode degradation or electrolyte depletion.
+The gold standard for physical fidelity is the electrochemical model, often described by the \textbf{Doyle-Fuller-Newman (DFN)} framework or the \textbf{Single Particle Model (SPM)}. These models use coupled Partial Differential Equations (PDEs) to describe lithium-ion concentration gradients, potential distributions, and electrolyte dynamics. Xue et al. \cite{wang_pinn} demonstrated that such formulations can achieve high accuracy by resolving the cell's internal electrochemical states, including electrolyte dynamics. They provide a transparent view of internal degradation, allowing engineers to pinpoint whether capacity fade is due to anode degradation or electrolyte depletion.
 
 \textbf{Limitations:} However, the computational cost of solving these PDEs at every time step is prohibitive for real-time applications. Solving the P2D model typically requires solving a system of differential-algebraic equations with thousands of degrees of freedom. Furthermore, they require the identification of over 20 specific electrochemical parameters (e.g., diffusion coefficients, reaction rate constants, pore tortuosity), many of which can only be determined through destructive testing \cite{unmeasurable_states}. This renders them impractical for general-purpose BMS that must manage cells with manufacturing variances. As highlighted in feedback, pure PINN approaches relying on these PDEs are often too computationally expensive for real-world embedded use \cite{ref1_general}.
 
@@ -23,7 +23,7 @@ To circumvent the complexity of PDEs, researchers have developed empirical model
 \end{equation}
 \textbf{Analysis:} This model effectively captures the saturation effect of degradation. Its mathematical simplicity makes it an ideal candidate for the ``physics regularization'' term in this project. However, its rigid S-shape often fails to capture the multi-stage degradation observed in modern chemistries, particularly the transition from linear aging to the accelerated ``knee-point'' \cite{ref1_general}. Despite this, when coupled with a neural network, the Verhulst model can serve as a robust boundary constraint.
 
-\textbf{The Double-Exponential Model:} To address the rigidity of the logistic model, Ma et al. \cite{ma_dual_exp} proposed a Double-Exponential model ($y = a \cdot e^{bx} + c \cdot e^{dx}$).
+\textbf{The Double-Exponential Model:} To address the rigidity of the logistic model, a Double-Exponential form ($y = a \cdot e^{bx} + c \cdot e^{dx}$) is widely used; Yuan et al. \cite{ma_dual_exp} recently built an RUL predictor around it by combining the dual-exponential degradation law with an extended Kalman filter.
 \textbf{Mechanism:} This formulation assumes degradation is the sum of two distinct decay processes: a fast initial decay (SEI formation stabilization) and a slow long-term decay (active material loss).
 \textbf{Significance:} This model has become a robust baseline for curve-fitting approaches due to its flexibility in fitting the ``knee-point.'' Establishing this as a baseline in this thesis is crucial to demonstrate whether the hybrid AI model offers superior accuracy over this sophisticated empirical fit \cite{wang_pinn}. It directly answers the feedback regarding the need for a model-driven baseline.
 
@@ -31,7 +31,7 @@ To circumvent the complexity of PDEs, researchers have developed empirical model
 
 \textbf{Note on Classification:} Each referenced work in the bibliography has been categorized by approach (PDE-PINN, empirical ODE, particle filter, or data-driven) in the Appendix. This explicit mapping clarifies that most recent PINN work in batteries attempts to embed high-fidelity PDEs; ODE-regularized hybrids remain a small subset, and within it no prior work compares fixed against \emph{learnable} ODE parameters under a leave-one-cell-out protocol, or validates uncertainty weighting against a tuned fixed weight --- the two comparisons this thesis contributes.
 
-\section{Data-Driven Approaches: The Accuracy Frontier}
+\section{Data-Driven Approaches}
 
 The availability of high-quality open-source datasets has fueled the dominance of data-driven methods, which treat the battery as a ``black box'' and learn the mapping from inputs to SOH.
 
@@ -39,15 +39,15 @@ The availability of high-quality open-source datasets has fueled the dominance o
 
 Standard Feed-Forward Networks (FFNs) are unsuitable for prognostics as they cannot capture temporal dependencies. The field rapidly shifted to Recurrent Neural Networks (RNNs) and their advanced variants.
 
-\textbf{LSTM vs. GRU:} Zhang et al. \cite{zhang_rnn} and others established LSTMs as a strong baseline. However, recent comparative studies by Li et al. \cite{jafari_cnn_gru} indicate that Gated Recurrent Units (GRUs) often match or exceed LSTM performance with lower computational cost (two gates vs. three).
+\textbf{LSTM vs. GRU:} Recent comparative work continues to find recurrent architectures competitive baselines for time-series forecasting \cite{zhang_rnn}, and LSTMs in particular remain a standard reference in battery prognostics. Jafari et al. \cite{jafari_cnn_gru} adopt Gated Recurrent Units (GRUs) in place of LSTMs, noting comparable accuracy at lower computational cost (two gates vs. three).
 
 \textbf{Relevance to Thesis:} This efficiency makes the GRU an ideal candidate for the ``lightweight'' framework proposed in this thesis. The GRU's ability to model long-term dependencies with fewer parameters aligns with the goal of edge deployment.
 
 \textbf{CNN-RNN Hybrids:} Jafari et al. \cite{jafari_cnn_gru} demonstrated that 1D-Convolutional Neural Networks (CNNs) are effective at extracting local features from charging curves, which are then passed to GRUs for temporal forecasting. This hierarchical feature-extraction principle informs the physics-informed feature engineering (ICA/DVA) adopted in this work.
 
-\subsection{The Transformer Revolution}
+\subsection{Transformer Models}
 
-The current state-of-the-art in predictive accuracy involves Transformer models, which utilize self-attention mechanisms to capture global dependencies in time-series data.
+Much of the recent accuracy literature is built on Transformer models, which use self-attention to capture global dependencies in time-series data.
 
 \textbf{SGEformer:} Fauzi et al. \cite{fauzi_sge} introduced the SGEformer (Seasonal and Growth Embedding Transformer), which achieves exceptionally low error rates (MSE ~0.0001) on NASA datasets.
 
@@ -55,9 +55,9 @@ The current state-of-the-art in predictive accuracy involves Transformer models,
 
 \textbf{Comparative Note:} For practical on-device feasibility, GRU-based hybrid solutions offer a favorable accuracy--cost trade-off; Transformers yield strong accuracy but at a compute and memory cost that is difficult to justify for on-device deployment.
 
-\section{Hybrid Physics-Informed Frameworks: The Convergence}
+\section{Hybrid Physics-Informed Frameworks}
 
-Physics-Informed Machine Learning (PIML) represents the frontier of battery prognostics, aiming to merge the interpretability of physics with the flexibility of deep learning.
+Physics-Informed Machine Learning (PIML) merges the interpretability of physics with the flexibility of deep learning, and is the family this thesis belongs to.
 
 \subsection{PDE-Based PINNs (The ``Heavy'' Approach)}
 

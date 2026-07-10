@@ -10,9 +10,9 @@
 
 % ODE / DEGRADATION MODEL PARAMETERS
 \nomenclature{$r$}{Intrinsic rate constant of the Verhulst model (negative for decay; learnable in route B)}
-\nomenclature{$K$}{Carrying capacity (asymptotic plateau) of the Verhulst model; learnable in route B}
-\nomenclature{$a, b$}{Parameters for the fast decay process (Double-Exponential Model)}
-\nomenclature{$c, d$}{Parameters for the slow decay process (Double-Exponential Model)}
+\nomenclature{$K$}{Carrying capacity of the Verhulst model (a plateau for $r>0$; a scale parameter of the fitted decay when $r<0$); learnable in route B}
+\nomenclature{$a, b$}{Amplitude and exponent of the first (fast) term of the Double-Exponential Model}
+\nomenclature{$c, d$}{Amplitude and exponent of the second (slow) term of the Double-Exponential Model}
 \nomenclature{$t$}{Fixed-scale cycle coordinate supplied to all learned models (elapsed cycle/500)}
 
 % DEEP LEARNING / OPTIMIZATION SYMBOLS
