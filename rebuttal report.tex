@@ -1,0 +1,248 @@
+\documentclass[12pt,a4paper]{article} 
+
+\usepackage[utf8]{inputenc} % set input encoding (not needed with XeLaTeX)
+
+%%% Examples of Article customizations
+% These packages are optional, depending whether you want the features they provide.
+% See the LaTeX Companion or other references for full information.
+
+
+\usepackage{graphicx} % support the \includegraphics command and options
+\graphicspath{ {./Figures/} }
+
+
+%%% PACKAGES
+\usepackage{booktabs} % for much better looking tables
+\usepackage{array} % for better arrays (eg matrices) in maths
+\usepackage{paralist} % very flexible & customisable lists (eg. enumerate/itemize, etc.)
+\usepackage{verbatim} % adds environment for commenting out blocks of text & for better verbatim
+\usepackage{subfig} % make it possible to include more than one captioned figure/table in a single float
+% These packages are all incorporated in the memoir class to one degree or another...
+
+%%% HEADERS & FOOTERS
+\usepackage{fancyhdr} % This should be set AFTER setting up the page geometry
+\pagestyle{fancy} % options: empty , plain , fancy
+\renewcommand{\headrulewidth}{0pt} % customise the layout...
+\lhead{}\chead{}\rhead{}
+\lfoot{}\cfoot{\thepage}\rfoot{}
+
+
+
+%%% ToC (table of contents) APPEARANCE
+\usepackage[nottoc,notlof,notlot]{tocbibind} % Put the bibliography in the ToC
+\usepackage[titles,subfigure]{tocloft} % Alter the style of the Table of Contents
+\renewcommand{\cftsecfont}{\rmfamily\mdseries\upshape}
+\renewcommand{\cftsecpagefont}{\rmfamily\mdseries\upshape} % No bold!
+
+% ADDITIONAL PACKAGES	
+\usepackage{float}
+\usepackage{indentfirst} % indenting the first paragraph
+\usepackage[left=2.54 cm, right=2.54 cm, top=2cm, bottom = 2 cm]{geometry} % Set page margins
+\usepackage{mcite} % multiple citations
+\usepackage{dirtytalk}
+\usepackage{tocloft} % dots in table of contents
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}} % dots in table of contents
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage[version=4]{mhchem}
+\usepackage{array}
+\usepackage{adjustbox}
+\usepackage[utf8]{inputenc}
+\usepackage{tikz}
+\DeclareMathOperator{\sign}{sign}
+\DeclareMathOperator{\argmax}{argmax}
+\DeclareMathOperator{\argmin}{argmin}
+\usepackage{tikz,pgfplots}
+\pgfplotsset{compat=1.18} 
+\usepackage{titlesec}
+\usepackage{sectsty}
+\usepackage{enumitem}
+\titleformat{\section}
+  {\normalfont\fontsize{12}{15}\bfseries}{\thesection}{1em}{}
+\usepackage[noadjust]{cite}
+\usepackage{amsmath,blkarray,booktabs,bigstrut}
+%%% END Article customizations
+
+\begin{document}
+
+\section*{\centering{Instructions to Candidates}}
+
+\begin{itemize}
+    \item \textit{Please remove this section before submitting the rebuttal report. The submitted report should start from the next section.}
+    \item This report documents the responses to the questions and comments provided by the examiners during the previous viva session. 
+    \item This report is going to be assessed by a domain expert. Hence, the responses should be written in brief. \textit{Do not prepare a lengthy rebuttal report.}
+    \item A response to a question or comment by an examiner documents how you wish to address the comment made by the examiner. 
+    \item  All questions and/or comments made by the examiners should be addressed in this report. Each question/comment should be documented verbatim.  
+    \item Response to a comment:
+    \begin{enumerate} [label = (\alph*)]
+        \item \textit{Scientific Response:} One part of the response provides a scientific argument or explanation as a response to the comment. You may refute the comment on various grounds. For example, it is possible that the examiner has misunderstood your work. In this case, you should provide an adequate scientific explanation of how or why you think your work has been misconstrued. To provide another example, suppose the comment is about changing your problem-solving approach. In this case, you can defend the original approach with suitable arguments. Otherwise, should you wish to incorporate changes in your thesis based on the comment, you can make suitable changes to your thesis as you deem fit. In this case, you need to provide a proper scientific justification for whatever changes you make in response to the comment.
+        \item \textit{Documenting changes done in thesis in response to a comment:} If you made changes to your thesis in response to the reviewer's comment, you need to document the same in this report. It is possible that in response to a comment, changes are made in multiple places in the thesis. All such changes should be documented in the response to the comment. For a change made at a particular location, the page number and paragraph number(s) within each page, e.g. Page number 8, paragraphs 1-2, should be mentioned. If a particular change spans multiple pages continuously, then mention the page range and the relevant paragraph number in the starting page and the end page, e.g. Page number 8, paragraph 1 - Page number 9, paragraph 2.   
+    \end{enumerate}
+    \item Response to a question: 
+    \begin{enumerate} [label = (\alph*)]
+        \item You should answer the question from an examiner adequately, providing proper scientific justification. 
+        \item If you make any changes to your thesis in response to a question from an examiner, document the same in this report.
+    \end{enumerate}
+    \item Any technical fact borrowed from the web, research papers, or other sources and used in responses to examiners should be supported with appropriate references.
+    \item All literature cited in this document should be listed in the bibliography.
+    \item This report should be written in formal language.
+    \item Proofread the report for spelling and grammatical errors.
+\end{itemize}
+
+\newpage 
+
+\section*{\centering{Rebuttal Report in Response to Comments from Examiners}}
+
+\vspace{\baselineskip}
+
+\section*{Thesis and Candidate Details}
+
+\vspace{\baselineskip}
+
+\begin{enumerate}
+    \item \textbf{Thesis Title:} % Thesis title here
+    \item \textbf{Student Name:} % Student here
+    \item \textbf{Roll Number:} % Roll Number here
+    \item \textbf{Degree:} Master Of Technology in Industrial Artificial Intelligence
+    \item \textbf{Previous Viva Date:} % Previous Viva Date here
+    \item \textbf{Phase in Previous Viva:} Phase % 1/2/3
+    \item \textbf{Mentor Name(s):} 
+            \begin{enumerate} [label=(\roman*)]
+                \item Mentor 1 Name: 
+                \item Mentor 2 Name: % Delete this if you have only one mentor
+            \end{enumerate}
+\end{enumerate}
+
+\newpage 
+
+\section*{\centering{Response to comments by Examiner 1}}
+
+\begin{flushleft}
+\large{ \textbf{Examiner Name:} } % Examiner name here
+
+\vspace{\baselineskip}
+
+\textbf{Comment 1:} % Comment 1 here
+
+\vspace{\baselineskip}
+
+\textbf{Response:} % Response to comment 1 here 
+
+\vspace{\baselineskip}
+
+\textbf{Thesis Changes:}
+
+\begin{enumerate}
+    \item 
+    \begin{enumerate}
+        \item Section/sub-section number:
+        \item Page and Paragraph number(s):
+    \end{enumerate} 
+    \item 
+    \begin{enumerate}
+        \item Section/sub-section number:
+        \item Page and Paragraph number(s):
+    \end{enumerate} 
+    % Add more items if required here
+\end{enumerate}
+
+\vspace{\baselineskip}
+
+\textbf{Comment 2:} % Comment 1 here
+
+\vspace{\baselineskip}
+
+\textbf{Response:} % Response to comment 1 here
+
+\vspace{\baselineskip}
+
+\textbf{Changes in Thesis:}
+
+\begin{enumerate}
+    \item 
+    \begin{enumerate}
+        \item Section/sub-section number:
+        \item Page and Paragraph number(s):
+    \end{enumerate} 
+    \item 
+    \begin{enumerate}
+        \item Section/sub-section number:
+        \item Page and Paragraph number(s):
+    \end{enumerate} 
+    % Add more items if required here
+\end{enumerate}
+
+% Add more comments and responses if required here
+
+\end{flushleft}
+
+\newpage
+
+\section*{\centering{Response to comments by Examiner 2}}
+
+\begin{flushleft}
+\large{ \textbf{Examiner Name:} } % Examiner name here
+
+\vspace{\baselineskip}
+
+\textbf{Comment 1:} % Comment 1 here
+
+\vspace{\baselineskip}
+
+\textbf{Response:} % Response to comment 1 here
+
+\vspace{\baselineskip}
+
+\textbf{Changes in Thesis:}
+
+\begin{enumerate}
+    \item 
+    \begin{enumerate}
+        \item Section/sub-section number:
+        \item Page and Paragraph number(s):
+    \end{enumerate} 
+    \item 
+    \begin{enumerate}
+        \item Section/sub-section number:
+        \item Page and Paragraph number(s):
+    \end{enumerate} 
+    % Add more items if required here
+\end{enumerate}
+
+\vspace{\baselineskip}
+
+\textbf{Comment 2:} % Comment 1 here
+
+\vspace{\baselineskip}
+
+\textbf{Response:} % Response to comment 1 here
+
+\vspace{\baselineskip}
+
+\textbf{Changes in Thesis:}
+
+\begin{enumerate}
+    \item 
+    \begin{enumerate}
+        \item Section/sub-section number:
+        \item Page and Paragraph number(s):
+    \end{enumerate} 
+    \item 
+    \begin{enumerate}
+        \item Section/sub-section number:
+        \item Page and Paragraph number(s):
+    \end{enumerate} 
+    % Add more items if required here
+\end{enumerate}
+
+\vspace{\baselineskip}
+
+% Add more comments and responses if required here
+
+\end{flushleft}
+
+\newpage
+
+\section*{References}
+
+\end{document}
