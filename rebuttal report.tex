@@ -1,4 +1,4 @@
-\documentclass[12pt,a4paper]{article} 
+\documentclass[12pt,a4paper]{article}
 
 \usepackage[utf8]{inputenc} % set input encoding (not needed with XeLaTeX)
 
@@ -34,7 +34,7 @@
 \renewcommand{\cftsecfont}{\rmfamily\mdseries\upshape}
 \renewcommand{\cftsecpagefont}{\rmfamily\mdseries\upshape} % No bold!
 
-% ADDITIONAL PACKAGES	
+% ADDITIONAL PACKAGES
 \usepackage{float}
 \usepackage{indentfirst} % indenting the first paragraph
 \usepackage[left=2.54 cm, right=2.54 cm, top=2cm, bottom = 2 cm]{geometry} % Set page margins
@@ -53,7 +53,7 @@
 \DeclareMathOperator{\argmax}{argmax}
 \DeclareMathOperator{\argmin}{argmin}
 \usepackage{tikz,pgfplots}
-\pgfplotsset{compat=1.18} 
+\pgfplotsset{compat=1.18}
 \usepackage{titlesec}
 \usepackage{sectsty}
 \usepackage{enumitem}
@@ -65,32 +65,6 @@
 
 \begin{document}
 
-\section*{\centering{Instructions to Candidates}}
-
-\begin{itemize}
-    \item \textit{Please remove this section before submitting the rebuttal report. The submitted report should start from the next section.}
-    \item This report documents the responses to the questions and comments provided by the examiners during the previous viva session. 
-    \item This report is going to be assessed by a domain expert. Hence, the responses should be written in brief. \textit{Do not prepare a lengthy rebuttal report.}
-    \item A response to a question or comment by an examiner documents how you wish to address the comment made by the examiner. 
-    \item  All questions and/or comments made by the examiners should be addressed in this report. Each question/comment should be documented verbatim.  
-    \item Response to a comment:
-    \begin{enumerate} [label = (\alph*)]
-        \item \textit{Scientific Response:} One part of the response provides a scientific argument or explanation as a response to the comment. You may refute the comment on various grounds. For example, it is possible that the examiner has misunderstood your work. In this case, you should provide an adequate scientific explanation of how or why you think your work has been misconstrued. To provide another example, suppose the comment is about changing your problem-solving approach. In this case, you can defend the original approach with suitable arguments. Otherwise, should you wish to incorporate changes in your thesis based on the comment, you can make suitable changes to your thesis as you deem fit. In this case, you need to provide a proper scientific justification for whatever changes you make in response to the comment.
-        \item \textit{Documenting changes done in thesis in response to a comment:} If you made changes to your thesis in response to the reviewer's comment, you need to document the same in this report. It is possible that in response to a comment, changes are made in multiple places in the thesis. All such changes should be documented in the response to the comment. For a change made at a particular location, the page number and paragraph number(s) within each page, e.g. Page number 8, paragraphs 1-2, should be mentioned. If a particular change spans multiple pages continuously, then mention the page range and the relevant paragraph number in the starting page and the end page, e.g. Page number 8, paragraph 1 - Page number 9, paragraph 2.   
-    \end{enumerate}
-    \item Response to a question: 
-    \begin{enumerate} [label = (\alph*)]
-        \item You should answer the question from an examiner adequately, providing proper scientific justification. 
-        \item If you make any changes to your thesis in response to a question from an examiner, document the same in this report.
-    \end{enumerate}
-    \item Any technical fact borrowed from the web, research papers, or other sources and used in responses to examiners should be supported with appropriate references.
-    \item All literature cited in this document should be listed in the bibliography.
-    \item This report should be written in formal language.
-    \item Proofread the report for spelling and grammatical errors.
-\end{itemize}
-
-\newpage 
-
 \section*{\centering{Rebuttal Report in Response to Comments from Examiners}}
 
 \vspace{\baselineskip}
@@ -100,149 +74,535 @@
 \vspace{\baselineskip}
 
 \begin{enumerate}
-    \item \textbf{Thesis Title:} % Thesis title here
-    \item \textbf{Student Name:} % Student here
-    \item \textbf{Roll Number:} % Roll Number here
+    \item \textbf{Thesis Title:} Estimating Remaining Useful Life and State of Health of EV Batteries by Hybrid Physics-Informed Deep Learning Framework
+    \item \textbf{Student Name:} Rajat Sharma
+    \item \textbf{Roll Number:} CH24M559
     \item \textbf{Degree:} Master Of Technology in Industrial Artificial Intelligence
-    \item \textbf{Previous Viva Date:} % Previous Viva Date here
-    \item \textbf{Phase in Previous Viva:} Phase % 1/2/3
-    \item \textbf{Mentor Name(s):} 
+    \item \textbf{Previous Viva Date:} 24th March, 2026
+    \item \textbf{Phase in Previous Viva:} Phase 2
+    \item \textbf{Mentor Name(s):}
             \begin{enumerate} [label=(\roman*)]
-                \item Mentor 1 Name: 
-                \item Mentor 2 Name: % Delete this if you have only one mentor
+                \item Mentor 1 Name: Dr. Sandeep Patalay
             \end{enumerate}
 \end{enumerate}
 
-\newpage 
+\vspace{\baselineskip}
+
+\noindent All section, table, figure, and page references below refer to the final
+Phase-3 thesis. Page numbers are those printed in the thesis; paragraph numbers
+count full paragraphs from the top of the cited page.
+
+\newpage
 
 \section*{\centering{Response to comments by Examiner 1}}
 
-\begin{flushleft}
-\large{ \textbf{Examiner Name:} } % Examiner name here
+\subsection*{Report feedback}
+
+\textbf{Comment 1:} \say{The figures must be improved.}
 
 \vspace{\baselineskip}
 
-\textbf{Comment 1:} % Comment 1 here
-
-\vspace{\baselineskip}
-
-\textbf{Response:} % Response to comment 1 here 
+\textbf{Response:} Every figure in the thesis was regenerated from the
+reproducible analysis pipeline with publication settings: 600~dpi export, serif
+typography matching the thesis body, a colorblind-safe palette with one fixed
+color per model across all comparative figures, labeled axes, and confidence
+intervals where applicable. Several new diagnostic figures were added,
+including a differential-error plot, an $\alpha$--$\lambda$ prognosis plot, and
+deployment-footprint comparisons.
 
 \vspace{\baselineskip}
 
 \textbf{Thesis Changes:}
 
 \begin{enumerate}
-    \item 
+    \item
     \begin{enumerate}
-        \item Section/sub-section number:
-        \item Page and Paragraph number(s):
-    \end{enumerate} 
-    \item 
+        \item Section/sub-section number: Chapter 5 (Figures 5.1--5.6) and Chapter 6 (Figures 6.1--6.11), all regenerated
+        \item Page and Paragraph number(s): Pages 30--37 and 48--67 (figures)
+    \end{enumerate}
+    \item
     \begin{enumerate}
-        \item Section/sub-section number:
-        \item Page and Paragraph number(s):
-    \end{enumerate} 
-    % Add more items if required here
+        \item Section/sub-section number: New diagnostic figures: Figure 6.6 (differential error), Figure 6.8 ($\alpha$--$\lambda$ prognosis), Figures 6.10--6.11 (footprint and accuracy-versus-memory)
+        \item Page and Paragraph number(s): Pages 57, 61, and 66--67
+    \end{enumerate}
 \end{enumerate}
 
 \vspace{\baselineskip}
 
-\textbf{Comment 2:} % Comment 1 here
+\textbf{Comment 2:} \say{Some more explanation of ODE solving techniques, GRU and motivation for other pre-processing methods should be provided.}
 
 \vspace{\baselineskip}
 
-\textbf{Response:} % Response to comment 1 here
+\textbf{Response:} The ODE formulation now presents both governing laws (Verhulst
+and double-exponential), their integrated closed forms, the sign convention of
+the fitted rate constant, their role as soft regularizers, and the precise
+definition of the derivative used in the physics loss (the partial derivative of
+the network output with respect to its cycle-coordinate input, stated as a
+tractable proxy for the trajectory derivative). The GRU section provides the
+full gate equations \cite{cho2014} and the reasons for preferring a GRU over an
+LSTM and a Transformer under the edge-deployment constraint. Every
+preprocessing step (Savitzky--Golay smoothing before the $dQ/dV$
+differentiation, per-cell imputation, train-only Min--Max scaling, windowing)
+is motivated where it is introduced. A formal definition of RUL was also added.
 
 \vspace{\baselineskip}
 
-\textbf{Changes in Thesis:}
+\textbf{Thesis Changes:}
 
 \begin{enumerate}
-    \item 
+    \item
     \begin{enumerate}
-        \item Section/sub-section number:
-        \item Page and Paragraph number(s):
-    \end{enumerate} 
-    \item 
+        \item Section/sub-section number: Sections 3.2--3.3 (ODE laws, integrated forms, physics loss); RUL definition in Section 3.1
+        \item Page and Paragraph number(s): Pages 18--22; RUL definition on page 18, paragraphs 2--3 and Equation (3.3)
+    \end{enumerate}
+    \item
     \begin{enumerate}
-        \item Section/sub-section number:
-        \item Page and Paragraph number(s):
-    \end{enumerate} 
-    % Add more items if required here
+        \item Section/sub-section number: Section 4.1 (smoothing strategy) and Section 4.2 (GRU gate equations)
+        \item Page and Paragraph number(s): Pages 23--26
+    \end{enumerate}
+    \item
+    \begin{enumerate}
+        \item Section/sub-section number: Section 5.1.1 (preprocessing pipeline and motivations)
+        \item Page and Paragraph number(s): Pages 31--38
+    \end{enumerate}
 \end{enumerate}
 
-% Add more comments and responses if required here
+\vspace{\baselineskip}
 
-\end{flushleft}
-
-\newpage
-
-\section*{\centering{Response to comments by Examiner 2}}
-
-\begin{flushleft}
-\large{ \textbf{Examiner Name:} } % Examiner name here
+\textbf{Comment 3:} \say{Affiliation of mentor is missing in certificate page.}
 
 \vspace{\baselineskip}
 
-\textbf{Comment 1:} % Comment 1 here
+\textbf{Response:} The certificate page has been corrected. It now carries the
+mentor's signature together with his name, role, designation, and organisation
+(Dr. Sandeep Patalay, Research Mentor, Delivery Head -- IoT and Digital
+Engineering, Tata Consultancy Services).
 
 \vspace{\baselineskip}
 
-\textbf{Response:} % Response to comment 1 here
-
-\vspace{\baselineskip}
-
-\textbf{Changes in Thesis:}
+\textbf{Thesis Changes:}
 
 \begin{enumerate}
-    \item 
+    \item
     \begin{enumerate}
-        \item Section/sub-section number:
-        \item Page and Paragraph number(s):
-    \end{enumerate} 
-    \item 
-    \begin{enumerate}
-        \item Section/sub-section number:
-        \item Page and Paragraph number(s):
-    \end{enumerate} 
-    % Add more items if required here
+        \item Section/sub-section number: Thesis Certificate page (front matter)
+        \item Page and Paragraph number(s): Certificate page (unnumbered, second page of the thesis), mentor signature block
+    \end{enumerate}
 \end{enumerate}
 
 \vspace{\baselineskip}
 
-\textbf{Comment 2:} % Comment 1 here
+\subsection*{Overall comments}
+
+\textbf{Comment 4:} \say{The student should learn the fundamentals of the problems and methodology.}
 
 \vspace{\baselineskip}
 
-\textbf{Response:} % Response to comment 1 here
+\textbf{Response:} The final thesis demonstrates the fundamentals explicitly
+where the Phase-2 draft was vague: the physics loss is defined precisely as the
+partial derivative of the network output with respect to the cycle-coordinate
+input, with its role as a proxy for the trajectory derivative stated; the
+learned Verhulst parameters are reported with their units and physical
+interpretation; the Physical Consistency Score is bounded by the ground-truth
+reference (the measured trajectories themselves score only 0.85--0.90 because
+capacity regeneration is real) so the metric is read correctly as trend
+plausibility; and all statistical tests are performed at the correct unit of
+replication (fold $\times$ seed runs), with their limits stated.
 
 \vspace{\baselineskip}
 
-\textbf{Changes in Thesis:}
+\textbf{Thesis Changes:}
 
 \begin{enumerate}
-    \item 
+    \item
     \begin{enumerate}
-        \item Section/sub-section number:
-        \item Page and Paragraph number(s):
-    \end{enumerate} 
-    \item 
+        \item Section/sub-section number: Section 3.3 (physics-loss derivative definition); Section 6.2 (learned parameters and interpretation)
+        \item Page and Paragraph number(s): Pages 20--21; page 49
+    \end{enumerate}
+    \item
     \begin{enumerate}
-        \item Section/sub-section number:
-        \item Page and Paragraph number(s):
-    \end{enumerate} 
-    % Add more items if required here
+        \item Section/sub-section number: Section 5.2 (Physical Consistency Metric, bounded by the ground-truth reference); Section 6.5.1 (statistics at the run level)
+        \item Page and Paragraph number(s): Page 39 (Physical Consistency Metric paragraph); pages 55--57
+    \end{enumerate}
 \end{enumerate}
 
 \vspace{\baselineskip}
 
-% Add more comments and responses if required here
+\textbf{Comment 5:} \say{The student can completely avoid the ode based approach by integrating the logistic model and the double-exponential model.}
 
-\end{flushleft}
+\vspace{\baselineskip}
 
-\newpage
+\textbf{Response:} This suggestion was implemented in full as route~A of the
+framework: both laws are used in their integrated closed forms, fitted once on
+the training cells and applied as a soft penalty, with no ODE solving. Rather
+than assuming one mechanism is better, the thesis implements both route~A and
+the learnable ODE-residual route~B and lets the data decide. The comparison
+became a central result: the learnable route~B is better than or equal to the
+integrated fixed prior on all four held-out cells (SOH RMSE 0.0292 versus
+0.0382 overall), with the largest margin on the atypical cell B0006, where a
+prior fitted on other cells does not apply. Both the suggested approach and the
+measured evidence for going beyond it are therefore in the thesis.
 
-\section*{References}
+\vspace{\baselineskip}
+
+\textbf{Thesis Changes:}
+
+\begin{enumerate}
+    \item
+    \begin{enumerate}
+        \item Section/sub-section number: Section 4.4 (the two physics routes)
+        \item Page and Paragraph number(s): Page 27
+    \end{enumerate}
+    \item
+    \begin{enumerate}
+        \item Section/sub-section number: Section 6.4 and Table 6.3 (per-cell comparison of the two routes)
+        \item Page and Paragraph number(s): Pages 53--55; Table 6.3 on page 53
+    \end{enumerate}
+\end{enumerate}
+
+\vspace{\baselineskip}
+
+\textbf{Comment 6:} \say{The student has to provide extensive baselines for Physics informed machine learning methods for intended applications (extreme hardware constraint).}
+
+\vspace{\baselineskip}
+
+\textbf{Response:} The benchmark was extended to ten models evaluated under one
+identical protocol: two non-neural floors (double-exponential curve fit and
+SVR), LSTM, GRU, two Transformer scales (17k and 225k parameters), a
+continuous-time Neural-ODE as a physics-informed comparator, a
+matched-capacity no-physics control, and the two hybrid variants. The
+deployment candidates are additionally profiled against the Cortex-M4 hardware
+budget (int8 flash, activation RAM, MACs, analytic latency).
+
+\vspace{\baselineskip}
+
+\textbf{Thesis Changes:}
+
+\begin{enumerate}
+    \item
+    \begin{enumerate}
+        \item Section/sub-section number: Table 5.3 (baseline comparison matrix); Table 6.2 (main benchmark, ten models)
+        \item Page and Paragraph number(s): Page 41; page 50
+    \end{enumerate}
+    \item
+    \begin{enumerate}
+        \item Section/sub-section number: Section 6.8 and Table 6.9 (hardware-constraint profiling)
+        \item Page and Paragraph number(s): Pages 65--67; Table 6.9 on page 66
+    \end{enumerate}
+\end{enumerate}
+
+\vspace{\baselineskip}
+
+\textbf{Comment 7:} \say{The student has to provide standard prognosis curves for the example.}
+
+\vspace{\baselineskip}
+
+\textbf{Response:} Standard prognostic (PHM) evaluation was added following
+Saxena et al.~\cite{saxena2010}: the $\alpha$--$\lambda$ accuracy with the
+$\pm 20\%$ cone and the Cumulative Relative Accuracy, with RUL derived from the
+predicted SOH trajectory in the standard way. Cycles after end-of-life are
+masked so that only the informative pre-EOL region is scored; the Prognostic
+Horizon degenerates under this masking and is therefore not used as a
+comparison axis.
+
+\vspace{\baselineskip}
+
+\textbf{Thesis Changes:}
+
+\begin{enumerate}
+    \item
+    \begin{enumerate}
+        \item Section/sub-section number: Section 6.6 (PHM assessment), Table 6.5, and Figure 6.8 ($\alpha$--$\lambda$ prognosis curve with the $\pm 20\%$ cone)
+        \item Page and Paragraph number(s): Pages 59--62; Table 6.5 on page 60; Figure 6.8 on page 61
+    \end{enumerate}
+\end{enumerate}
+
+\vspace{\baselineskip}
+
+\textbf{Comment 8:} \say{Quantify the accuracy loss compared to the transformer model; stating `85 to 90\%' is insufficient.}
+
+\vspace{\baselineskip}
+
+\textbf{Response:} The comparison is now fully quantified with a paired,
+run-level analysis against a high-capacity (225k-parameter) Transformer. The
+hybrid's mean SOH RMSE is 21.0\% lower (0.0292 versus 0.0369), though it wins
+only 5 of 12 individual runs (Wilcoxon $p = 0.850$; the mean gap reflects the
+Transformer's much larger run-to-run variance and is not statistically
+significant with four cells), while its physical-consistency advantage holds on
+all 12 runs ($p \approx 4.9 \times 10^{-4}$). The matched-capacity control
+carries the attribution claim: adding the physics residual to the identical
+backbone lowers RMSE by 22.6\% on 11 of 12 paired runs ($p = 0.021$). The
+earlier qualitative claim is thus replaced by measured results with their
+statistical limits stated.
+
+\vspace{\baselineskip}
+
+\textbf{Thesis Changes:}
+
+\begin{enumerate}
+    \item
+    \begin{enumerate}
+        \item Section/sub-section number: Section 6.5 and Table 6.4 (paired fold-level comparisons with Wilcoxon tests)
+        \item Page and Paragraph number(s): Pages 55--58; Table 6.4 on page 56
+    \end{enumerate}
+\end{enumerate}
+
+\vspace{\baselineskip}
+
+\textbf{Comment 9:} \say{Revise Figure 6.3 to clearly illustrate the deviation in accuracy between models, potentially using a differential plot.}
+
+\vspace{\baselineskip}
+
+\textbf{Response:} A per-cycle differential-error plot was added exactly as
+suggested: it shows the difference in absolute SOH error between each baseline
+and the hybrid across the life of a held-out cell, joined on the cycle index so
+that models with different sequence lengths are compared at the same cycles.
+
+\vspace{\baselineskip}
+
+\textbf{Thesis Changes:}
+
+\begin{enumerate}
+    \item
+    \begin{enumerate}
+        \item Section/sub-section number: Figure 6.6 (differential error plot, held-out cell B0018)
+        \item Page and Paragraph number(s): Page 57
+    \end{enumerate}
+\end{enumerate}
+
+\vspace{\baselineskip}
+
+\textbf{Comment 10:} \say{Justify the aggregation of data points; articulate the trade-offs and potential benefits beyond simply addressing time series data requirements.}
+
+\vspace{\baselineskip}
+
+\textbf{Response:} The per-second to per-cycle aggregation is motivated in the
+data chapter: a few hundred labeled cycles cannot support learning from raw
+per-second streams, and the ICA/DVA features retain the within-cycle
+information that carries the health signal. The trade-off is quantified by a
+feature-set ablation on the full evaluation protocol, which also exposes an
+honest caveat: a minimal two-feature set consisting of the near-proxy features
+(discharge time and mean voltage) achieves a lower pointwise RMSE than the full
+set (0.0315 versus 0.0382), so the richer representation earns its place
+through physical interpretability and diagnostics rather than pointwise
+accuracy. The thesis states explicitly that this ablation is a feature-count
+surrogate rather than a literal within-cycle representation study, which is
+noted as future work.
+
+\vspace{\baselineskip}
+
+\textbf{Thesis Changes:}
+
+\begin{enumerate}
+    \item
+    \begin{enumerate}
+        \item Section/sub-section number: Section 5.1.1 (aggregation motivation and feature--label proximity)
+        \item Page and Paragraph number(s): Pages 33--34
+    \end{enumerate}
+    \item
+    \begin{enumerate}
+        \item Section/sub-section number: Section 6.7 and Table 6.7 (aggregation ablation on the full protocol)
+        \item Page and Paragraph number(s): Page 64
+    \end{enumerate}
+\end{enumerate}
+
+\vspace{\baselineskip}
+
+\textbf{Comment 11:} \say{Thoroughly investigate and present the rationale for combining the warehouse [sic; Verhulst] and double exponential ODEs, addressing concerns about redundancy and potential for simpler solutions.}
+
+\vspace{\baselineskip}
+
+\textbf{Response:} The redundancy question was answered empirically with an
+information-criterion analysis: the double-exponential attains a lower AIC than
+the logistic on all five cells ($\Delta$AIC from $-86$ to $-347$), so the
+two-timescale law is retained as the primary closed-form prior and the logistic
+as an alternative configuration. The full-protocol design ablation adds a
+complementary finding relevant to the \say{simpler solutions} concern: once
+used as soft penalties inside the hybrid, the two priors perform
+near-identically (RMSE 0.0382 versus 0.0383) --- the decisive factor is not
+the prior's exact shape but whether its parameters are learnable (route~B).
+
+\vspace{\baselineskip}
+
+\textbf{Thesis Changes:}
+
+\begin{enumerate}
+    \item
+    \begin{enumerate}
+        \item Section/sub-section number: Section 6.2, Table 6.1, and Figure 6.1 (AIC redundancy analysis)
+        \item Page and Paragraph number(s): Pages 46--48; Table 6.1 on page 47
+    \end{enumerate}
+    \item
+    \begin{enumerate}
+        \item Section/sub-section number: Section 6.7 and Table 6.6 (priors compared inside the hybrid, full protocol)
+        \item Page and Paragraph number(s): Page 63
+    \end{enumerate}
+\end{enumerate}
+
+\vspace{\baselineskip}
+
+\textbf{Comment 12:} \say{Demonstrate a deeper understanding of Bayesian optimization and its applicability to the problem, particularly regarding the weighting of data and physical loss.}
+
+\vspace{\baselineskip}
+
+\textbf{Response:} The thesis now separates the two distinct uses of
+\say{Bayesian} that were conflated earlier: Optuna's Tree-structured Parzen
+Estimator for hyperparameter search, and the Bayesian (maximum-likelihood)
+interpretation of homoscedastic uncertainty weighting \cite{kendall2018,wen2024}
+for the data/physics loss balance. The uncertainty weighting was then tested
+against a tuned fixed weight on the full benchmark protocol: it brings no
+reliable accuracy gain on either physics route (on route~B its better mean,
+0.0259 versus 0.0292, is carried by run-to-run variance, 6 of 12 runs,
+$p = 0.62$), with one consistent side effect --- a physical-consistency gain
+on route~B (0.903 versus 0.884, 10 of 12 runs, $p = 0.019$). The comparison is
+reported in both directions and the fixed weight is retained for the headline
+models.
+
+\vspace{\baselineskip}
+
+\textbf{Thesis Changes:}
+
+\begin{enumerate}
+    \item
+    \begin{enumerate}
+        \item Section/sub-section number: Sections 4.3--4.4 (uncertainty-weighting formulation, its implementation note, and its separation from the TPE search)
+        \item Page and Paragraph number(s): Pages 26--27
+    \end{enumerate}
+    \item
+    \begin{enumerate}
+        \item Section/sub-section number: Section 6.7, Table 6.6, and observation 2 of the design ablation (empirical test on the full protocol)
+        \item Page and Paragraph number(s): Pages 63--64
+    \end{enumerate}
+\end{enumerate}
+
+\vspace{\baselineskip}
+
+\textbf{Comment 13:} \say{Explore and compare physics-informed machine learning approaches as an alternative to the current hybrid model.}
+
+\vspace{\baselineskip}
+
+\textbf{Response:} Two physics-informed alternatives are compared under the
+same protocol: a continuous-time Neural-ODE baseline, and, within the proposed
+framework, the fixed closed-form prior (route~A) against the learnable
+ODE-residual (route~B) --- two genuinely different physics-informed mechanisms
+\cite{raissi2019}. The comparison of the two routes is the central finding of
+the thesis; extending to further PIML families under the same hardware
+constraint, including a structure-free derivative-penalty control, is listed as
+future work.
+
+\vspace{\baselineskip}
+
+\textbf{Thesis Changes:}
+
+\begin{enumerate}
+    \item
+    \begin{enumerate}
+        \item Section/sub-section number: Table 6.2 (Neural-ODE row of the benchmark); Sections 6.3--6.4 (routes comparison)
+        \item Page and Paragraph number(s): Page 50; pages 50--55
+    \end{enumerate}
+    \item
+    \begin{enumerate}
+        \item Section/sub-section number: Chapter 7, Future Work (broader PIML baselines and the structure-free control)
+        \item Page and Paragraph number(s): Pages 71--74
+    \end{enumerate}
+\end{enumerate}
+
+\vspace{\baselineskip}
+
+\textbf{Comment 14:} \say{Provide quantitative evidence of the memory footprint reduction achieved with the hybrid model compared to transformers, specifically in the context of target hardware (Cortex M4).}
+
+\vspace{\baselineskip}
+
+\textbf{Response:} The footprint is now measured rather than estimated. The
+deployed 11k-parameter hybrid quantizes (dynamic int8) to 20.2~KB of flash with
+1.25~KB of activation RAM --- 2\% of the Cortex-M4 flash budget, thirty times
+less flash than the high-capacity Transformer (611~KB) and $3.5\times$ less
+than the edge-sized one (70~KB) --- with per-model MAC counts and an analytic
+latency estimate labeled as such. The accuracy cost of the deployment size is
+stated explicitly (0.0292 $\rightarrow$ 0.0469), and a quantized ONNX export of
+the deployed model accompanies the code.
+
+\vspace{\baselineskip}
+
+\textbf{Thesis Changes:}
+
+\begin{enumerate}
+    \item
+    \begin{enumerate}
+        \item Section/sub-section number: Section 5.4 and Table 5.4 (deployment configuration and profiling methodology)
+        \item Page and Paragraph number(s): Pages 42--44; Table 5.4 on page 43
+    \end{enumerate}
+    \item
+    \begin{enumerate}
+        \item Section/sub-section number: Section 6.8, Table 6.9, and Figures 6.10--6.11 (measured Cortex-M4 footprint)
+        \item Page and Paragraph number(s): Pages 65--67; Table 6.9 on page 66
+    \end{enumerate}
+\end{enumerate}
+
+\vspace{\baselineskip}
+
+\textbf{Comment 15:} \say{Revisit the definition of `ODE' and its application in the context of the work, ensuring a clear understanding of its role and benefits.}
+
+\vspace{\baselineskip}
+
+\textbf{Response:} Chapter 3 now defines both governing laws, their integrated
+solutions, and the meaning and sign of each parameter --- including why the
+fitted carrying capacity may exceed unity under rated-capacity normalization
+and why the fitted rate constant is negative for a decaying trajectory --- as
+well as the soft-penalty role of the ODE in the loss and the exact derivative
+the implementation computes. Chapter 4 defines how the ODE enters each of the
+two physics routes (as a fixed integrated curve in route~A; as a learnable
+residual in route~B).
+
+\vspace{\baselineskip}
+
+\textbf{Thesis Changes:}
+
+\begin{enumerate}
+    \item
+    \begin{enumerate}
+        \item Section/sub-section number: Sections 3.2--3.3 (laws, integrated forms, parameter meanings, physics loss)
+        \item Page and Paragraph number(s): Pages 18--22
+    \end{enumerate}
+    \item
+    \begin{enumerate}
+        \item Section/sub-section number: Section 4.4 (the ODE's role in each physics route)
+        \item Page and Paragraph number(s): Page 27
+    \end{enumerate}
+\end{enumerate}
+
+\vspace{\baselineskip}
+
+\begin{thebibliography}{9}
+
+\bibitem{saxena2010}
+A.~Saxena, J.~Celaya, B.~Saha, S.~Saha, and K.~Goebel,
+``Metrics for offline evaluation of prognostic performance,''
+\textit{International Journal of Prognostics and Health Management},
+vol.~1, no.~1, pp.~4--23, 2010.
+
+\bibitem{kendall2018}
+A.~Kendall, Y.~Gal, and R.~Cipolla,
+``Multi-task learning using uncertainty to weigh losses for scene geometry and semantics,''
+in \textit{Proc. IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+2018, pp.~7482--7491.
+
+\bibitem{wen2024}
+P.~Wen, Z.-S.~Ye, Y.~Li, S.~Chen, P.~Xie, and S.~Zhao,
+``Physics-informed neural networks for prognostics and health management of lithium-ion batteries,''
+\textit{IEEE Transactions on Intelligent Vehicles}, vol.~9, no.~1, pp.~2276--2289, 2024.
+
+\bibitem{raissi2019}
+M.~Raissi, P.~Perdikaris, and G.~E.~Karniadakis,
+``Physics-informed neural networks: A deep learning framework for solving forward and inverse problems involving nonlinear partial differential equations,''
+\textit{Journal of Computational Physics}, vol.~378, pp.~686--707, 2019.
+
+\bibitem{cho2014}
+K.~Cho, B.~van Merri\"enboer, C.~Gulcehre, D.~Bahdanau, F.~Bougares, H.~Schwenk, and Y.~Bengio,
+``Learning phrase representations using RNN encoder--decoder for statistical machine translation,''
+in \textit{Proc. Conference on Empirical Methods in Natural Language Processing (EMNLP)},
+2014, pp.~1724--1734.
+
+\end{thebibliography}
 
 \end{document}
